@@ -1,0 +1,24 @@
+<main class="main">
+  <div class="content">
+    <div class="form-container">
+      <div class=" card shadow-sm m-4">
+        <div class="card-body mb-4">
+          <form #profileForm="ngForm" novalidate>
+            <div class="row">
+              <div class="col-12">
+                <datatable [data]="data" [columns]="columns"> </datatable>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<ng-template #actionTemplate let-value let-row="row">
+    <button class="btn btn-sm btn-primary me-2" (click)="edit(row)">Edit</button>
+    <button class="btn btn-sm btn-danger" (click)="delete(row)">Delete</button>
+</ng-template>
+
+<router-outlet />
