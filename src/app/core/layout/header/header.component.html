@@ -1,0 +1,30 @@
+<header class="header">
+    <div class="header-left">
+        <button class="menu-toggle" (click)="toggleSidebar.emit()">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="logo">STOCK RADAR</div>
+        <div class="header-search">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search stocks..." [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)">
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="d-flex gap-2">
+            <select class="form-select custom-select" [ngModel]="selectedQuarter()"
+                (ngModelChange)="selectedQuarter.set($event)">
+                <option *ngFor="let q of quarters" [value]="q">{{q}}</option>
+            </select>
+            <select class="form-select custom-select" [ngModel]="selectedYear()"
+                (ngModelChange)="selectedYear.set($event)">
+                <option *ngFor="let y of years" [value]="y">{{y}}</option>
+            </select>
+        </div>
+
+        <button class="header-btn">
+            <i class="bi bi-download me-1"></i> Export
+        </button>
+        <div class="user-avatar">TS</div>
+    </div>
+</header>

@@ -1,0 +1,77 @@
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 70px;
+    bottom: 50px;
+    width: 260px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    overflow-y: auto;
+    z-index: 90;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Generic Collapsed State */
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+
+.sidebar-section {
+    margin-bottom: 32px;
+    padding: 0 20px;
+}
+
+.sidebar-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 12px;
+    white-space: nowrap;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-item {
+    margin-bottom: 4px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.sidebar-link:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.sidebar-link.active {
+    background: var(--bg-hover);
+    color: var(--explosive);
+    border-left: 3px solid var(--explosive);
+}
+
+.sidebar-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.link-text {
+    white-space: nowrap;
+}

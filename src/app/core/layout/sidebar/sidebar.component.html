@@ -1,0 +1,67 @@
+<aside class="sidebar" [class.closed]="!isOpen">
+    <div class="sidebar-section">
+        <div class="sidebar-title">Financial Analysis</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link active" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
+                    <span class="link-text">Results Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-clipboard-data"></i></span>
+                    <span class="link-text">Results List</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-title">Shareholding</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-briefcase-fill"></i></span>
+                    <span class="link-text">Shareholding Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+                    <span class="link-text">Shareholding List</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-title">Multi-Bagger</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-rocket-takeoff-fill"></i></span>
+                    <span class="link-text">Multi-Bagger Screener</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-title">Tools</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-scales"></i></span>
+                    <span class="link-text">Compare Stocks</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                    <span class="sidebar-icon"><i class="bi bi-star-fill"></i></span>
+                    <span class="link-text">Watchlist</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>

@@ -1,5 +1,16 @@
-<main class="main">
-  <div class="content">
-    <router-outlet />
+<div class="app-container" data-theme="light">
+
+  <app-header [searchQuery]="searchQuery" [selectedQuarter]="selectedQuarter" [selectedYear]="selectedYear"
+    [quarters]="quarters" [years]="years()" (toggleSidebar)="toggleSidebar()">
+  </app-header>
+
+  <app-sidebar [isOpen]="sidebarOpen()"></app-sidebar>
+
+  <!-- Mobile Overlay: Only visible on mobile when sidebar is OPEN -->
+  <div class="sidebar-overlay" [class.active]="isMobile() && sidebarOpen()" (click)="closeSidebar()">
   </div>
-</main>
+
+  <router-outlet></router-outlet>
+
+  <app-footer [isSidebarOpen]="sidebarOpen()"></app-footer>
+</div>

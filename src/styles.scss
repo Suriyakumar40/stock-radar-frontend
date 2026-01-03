@@ -33,4 +33,74 @@
      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
  }
 
- /* You can add global styles to this file, and also import other style files */
+ /* --- GLOBAL LAYOUT --- */
+ body,
+ .app-container {
+     font-family: 'Inter', sans-serif;
+     background: var(--bg-dark);
+     color: var(--text-primary);
+     min-height: 100vh;
+     overflow-x: hidden;
+ }
+
+ /* --- MAIN CONTENT & GENERIC RESPONSIVENESS --- */
+ .main-content {
+     margin-left: var(--sidebar-width);
+     margin-top: 70px;
+     margin-bottom: 50px;
+     padding: 24px;
+     min-height: calc(100vh - 120px);
+     transition: margin-left 0.3s ease-in-out;
+ }
+
+ /* Generic Collapsed State (Desktop) */
+ .main-content.expanded {
+     margin-left: 0;
+ }
+
+ /* Mobile Handling */
+ @media (max-width: 1024px) {
+     .main-content {
+         margin-left: 0 !important;
+     }
+ }
+
+ .page-header {
+     margin-bottom: 32px;
+     padding-bottom: 16px;
+     border-bottom: 1px solid var(--border);
+ }
+
+ .page-title {
+     font-family: 'Space Mono', monospace;
+     font-size: 24px;
+     font-weight: 700;
+     margin-bottom: 8px;
+     background: linear-gradient(135deg, var(--explosive), #00ccff);
+     -webkit-background-clip: text;
+     -webkit-text-fill-color: transparent;
+     background-clip: text;
+ }
+
+ .page-subtitle {
+     font-size: 14px;
+     color: var(--text-secondary);
+     margin-bottom: 0;
+ }
+
+ /* Overlay Styles */
+ .sidebar-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background: rgba(0, 0, 0, 0.5);
+     z-index: 80;
+     display: none;
+     backdrop-filter: blur(2px);
+ }
+
+ .sidebar-overlay.active {
+     display: block;
+ }
