@@ -1,0 +1,178 @@
+<div class="app-container" [attr.data-theme]="'light'">
+    <div class="container-fluid container-xl p-4">
+
+        <!-- HEADER -->
+        <header
+            class="header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+            <div class="mb-3 mb-md-0">
+                <h1 class="title mb-1">
+                    <i class="fa-solid fa-chart-line me-2"></i>Stock Analysis Dashboard
+                </h1>
+                <p class="subtitle mb-0">{{selectedQuarter()}} {{selectedYear()}} Results • Seasonality-Aligned
+                    Benchmarks</p>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
+                <!-- Dropdowns for Quarter and Year -->
+                <div class="d-flex gap-2">
+                    <select class="form-select custom-select" [ngModel]="selectedQuarter()"
+                        (ngModelChange)="selectedQuarter.set($event)">
+                        <option *ngFor="let q of quarters" [value]="q">{{q}}</option>
+                    </select>
+                    <select class="form-select custom-select" [ngModel]="selectedYear()"
+                        (ngModelChange)="selectedYear.set($event)">
+                        <option *ngFor="let y of years()" [value]="y">{{y}}</option>
+                    </select>
+                </div>
+
+                <div class="last-updated d-none d-lg-block">
+                    Updated: <span class="font-monospace">{{ today | date:'MMM d, h:mm a' }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="nav-tabs-custom mb-4" *ngIf="!detailViewActive()">
+            <button class="nav-tab" [class.active]="currentView() === 'indices'" (click)="setView('indices')">
+                <i class="fa-solid fa-layer-group me-2"></i>BY INDEX
+            </button>
+            <button class="nav-tab" [class.active]="currentView() === 'industry'" (click)="setView('industry')">
+                <i class="fa-solid fa-industry me-2"></i>BY INDUSTRY
+            </button>
+            <button class="nav-tab" [class.active]="currentView() === 'rating'" (click)="setView('rating')">
+                <i class="fa-solid fa-star me-2"></i>BY RATING
+            </button>
+        </nav>
+
+        <!-- OVERVIEW SECTION -->
+        <div class="overview-section animate-fade-in" *ngIf="!detailViewActive()">
+
+            <!-- View: Indices -->
+            <div class="overview-grid" *ngIf="currentView() === 'indices'">
+                <div class="overview-card" *ngFor="let item of indicesData()" [ngClass]="item.ratingClass"
+                    (click)="showDetail('index', item.name)">
+                    <div class="card-label">Market Cap Index</div>
+                    <div class="card-title">{{ item.name }}</div>
+                    <div class="card-stats">
+                        <div class="card-count">{{ item.count }}</div>
+                        <div class="card-breakdown">
+                            <div class="text-success"><i class="fa-solid fa-fire me-1"></i>{{ item.explosive }}
+                                Explosive</div>
+                            <div class="text-warning"><i class="fa-solid fa-bolt me-1"></i>{{ item.exceptional }}
+                                Exceptional</div>
+                            <div class="text-info"><i class="fa-solid fa-check me-1"></i>{{ item.good }} Good</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Industries -->
+            <div class="overview-grid" *ngIf="currentView() === 'industry'">
+                <div class="overview-card" *ngFor="let item of industryData()" [ngClass]="item.ratingClass"
+                    (click)="showDetail('industry', item.name)">
+                    <div class="card-label">Industry Sector</div>
+                    <div class="card-title">{{ item.name }}</div>
+                    <div class="card-stats">
+                        <div class="card-count">{{ item.count }}</div>
+                        <div class="card-breakdown">
+                            <div class="text-success"> {{ item.explosive }} Explosive</div>
+                            <div class="text-warning"> {{ item.exceptional }} Exceptional</div>
+                            <div class="text-info">✓ {{ item.good }} Good</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Ratings -->
+            <div class="overview-grid" *ngIf="currentView() === 'rating'">
+                <div class="overview-card" *ngFor="let item of ratingData()" [ngClass]="item.styleClass"
+                    (click)="showDetail('rating', item.name)">
+                    <div class="card-label">{{ item.icon }} Score {{ item.scoreRange }}</div>
+                    <div class="card-title">{{ item.name }}</div>
+                    <div class="card-stats">
+                        <div class="card-count">{{ item.count }}</div>
+                        <div class="card-breakdown">
+                            <div>Avg Profit: {{ item.avgProfit }}%</div>
+                            <div>Total Stocks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETAIL SECTION -->
+        <div class="detail-view animate-fade-in" *ngIf="detailViewActive()">
+            <div class="detail-header">
+                <h2 class="detail-title mb-0">
+                    <span class="text-muted fs-6 d-block mb-1 text-uppercase">{{ selectedFilterType() }}</span>
+                    {{ selectedFilterValue() }}
+                </h2>
+                <button class="back-btn" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-2"></i>BACK TO OVERVIEW
+                </button>
+            </div>
+
+            <!-- Filters inside Detail View -->
+            <div class="filter-bar">
+                <button class="filter-btn" [class.active]="detailRatingFilter() === 'ALL'"
+                    (click)="setDetailRatingFilter('ALL')">ALL</button>
+                <button class="filter-btn" [class.active]="detailRatingFilter() === 'EXPLOSIVE'"
+                    (click)="setDetailRatingFilter('EXPLOSIVE')">EXPLOSIVE</button>
+                <button class="filter-btn" [class.active]="detailRatingFilter() === 'EXCEPTIONAL'"
+                    (click)="setDetailRatingFilter('EXCEPTIONAL')">EXCEPTIONAL</button>
+                <button class="filter-btn" [class.active]="detailRatingFilter() === 'GOOD'"
+                    (click)="setDetailRatingFilter('GOOD')">GOOD</button>
+                <button class="filter-btn" [class.active]="detailRatingFilter() === 'AVERAGE'"
+                    (click)="setDetailRatingFilter('AVERAGE')">AVERAGE</button>
+            </div>
+
+            <!-- Responsive Table -->
+            <div class="stock-table-container">
+                <div class="stock-table-header d-none d-md-grid">
+                    <div>RANK</div>
+                    <div>SYMBOL</div>
+                    <div>INDUSTRY</div>
+                    <div class="text-end">SALES %</div>
+                    <div class="text-end">PROFIT %</div>
+                    <div class="text-end">OPM %</div>
+                    <div class="text-center">SCORE</div>
+                    <div class="text-center">RATING</div>
+                </div>
+
+                <div class="stock-list">
+                    <div class="stock-row" *ngFor="let stock of filteredStocks(); let i = index">
+                        <!-- Mobile Label handled via CSS or simple stacking -->
+                        <div class="rank">#{{ i + 1 }}</div>
+                        <div class="symbol">{{ stock.symbol }}</div>
+                        <div class="industry text-truncate" title="{{stock.industry}}">{{ stock.industry }}</div>
+                        <div class="metric text-end" [class.positive]="stock.sales > 0"
+                            [class.neutral]="stock.sales <= 0">
+                            <span class="d-md-none text-muted me-2">Sales:</span>{{ stock.sales }}%
+                        </div>
+                        <div class="metric text-end" [class.positive]="stock.profit > 0"
+                            [class.neutral]="stock.profit <= 0">
+                            <span class="d-md-none text-muted me-2">Profit:</span>{{ stock.profit }}%
+                        </div>
+                        <div class="metric text-end">
+                            <span class="d-md-none text-muted me-2">OPM:</span>{{ stock.opm }}%
+                        </div>
+                        <div class="text-center">
+                            <span class="d-md-none text-muted me-2">Score:</span>
+                            <span class="score-badge" [style.background]="getScoreColor(stock.score)">{{ stock.score
+                                }}/6</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="rating-badge rating-{{ stock.rating | lowercase }}">{{ stock.rating }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" *ngIf="filteredStocks().length === 0">
+                        <i class="fa-solid fa-chart-bar empty-icon"></i>
+                        <p>No stocks found matching these criteria.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

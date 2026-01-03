@@ -1,1 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+ /* --- CSS VARIABLES & THEME --- */
+ :root {
+     /* Dark Theme (Default) */
+     --bg-dark: #0a0e27;
+     --bg-card: #141829;
+     --bg-hover: #1a1f3a;
+     --explosive: #00ff88;
+     --exceptional: #ffaa00;
+     --good: #4a9eff;
+     --average: #6b7280;
+     --text-primary: #ffffff;
+     --text-secondary: #9ca3af;
+     --border: #2d3548;
+     --accent-glow: rgba(0, 255, 136, 0.15);
+     --card-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+ }
+
+ [data-theme="light"] {
+     --bg-dark: #f3f4f6;
+     --bg-card: #ffffff;
+     --bg-hover: #e5e7eb;
+     --explosive: #059669;
+     /* Darker green for white bg */
+     --exceptional: #d97706;
+     /* Darker orange */
+     --good: #2563eb;
+     /* Darker blue */
+     --average: #4b5563;
+     --text-primary: #111827;
+     --text-secondary: #6b7280;
+     --border: #e5e7eb;
+     --accent-glow: rgba(5, 150, 105, 0.1);
+     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+ }
+
+ /* You can add global styles to this file, and also import other style files */
