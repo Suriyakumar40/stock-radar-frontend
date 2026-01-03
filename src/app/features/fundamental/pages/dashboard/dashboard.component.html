@@ -1,19 +1,26 @@
-
 <main class="main-content">
-    <div class="page-header">
-        <h1 class="page-title">Quarter Results Dashboard</h1>
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h1 class="page-title mb-0">Quarter Results Dashboard</h1>
+        <div class="d-flex gap-2">
+            <select class="form-select custom-select" [ngModel]="selectedQuarter()" (ngModelChange)="selectedQuarter.set($event)">
+                <option *ngFor="let q of quarters" [value]="q">{{q}}</option>
+            </select>
+            <select class="form-select custom-select" [ngModel]="selectedYear()" (ngModelChange)="selectedYear.set($event)">
+                <option *ngFor="let y of years()" [value]="y">{{y}}</option>
+            </select>
+        </div>
     </div>
 
     <!-- NAVIGATION TABS -->
     <nav class="nav-tabs-custom mb-4" *ngIf="!detailViewActive()">
         <button class="nav-tab" [class.active]="currentView() === 'indices'" (click)="setView('indices')">
-            <i class="fa-solid fa-layer-group me-2"></i>BY INDEX
+            <i class="bi bi-layers me-2"></i>BY INDEX
         </button>
         <button class="nav-tab" [class.active]="currentView() === 'industry'" (click)="setView('industry')">
-            <i class="fa-solid fa-industry me-2"></i>BY INDUSTRY
+            <i class="bi bi-building me-2"></i>BY INDUSTRY
         </button>
         <button class="nav-tab" [class.active]="currentView() === 'rating'" (click)="setView('rating')">
-            <i class="fa-solid fa-star me-2"></i>BY RATING
+            <i class="bi bi-star me-2"></i>BY RATING
         </button>
     </nav>
 
@@ -24,16 +31,15 @@
         <div class="overview-grid" *ngIf="currentView() === 'indices'">
             <div class="overview-card" *ngFor="let item of indicesData()" [ngClass]="item.ratingClass"
                 (click)="showDetail('index', item.name)">
-                <div class="card-label">Market Cap Index</div>
                 <div class="card-title">{{ item.name }}</div>
                 <div class="card-stats">
                     <div class="card-count">{{ item.count }}</div>
                     <div class="card-breakdown">
-                        <div class="text-success"><i class="fa-solid fa-fire me-1"></i>{{ item.explosive }}
+                        <div class="text-success">{{ item.explosive }}
                             Explosive</div>
-                        <div class="text-warning"><i class="fa-solid fa-bolt me-1"></i>{{ item.exceptional }}
+                        <div class="text-warning"> {{ item.exceptional }}
                             Exceptional</div>
-                        <div class="text-info"><i class="fa-solid fa-check me-1"></i>{{ item.good }} Good</div>
+                        <div class="text-info"> {{ item.good }} Good</div>
                     </div>
                 </div>
             </div>
@@ -43,7 +49,6 @@
         <div class="overview-grid" *ngIf="currentView() === 'industry'">
             <div class="overview-card" *ngFor="let item of industryData()" [ngClass]="item.ratingClass"
                 (click)="showDetail('industry', item.name)">
-                <div class="card-label">Industry Sector</div>
                 <div class="card-title">{{ item.name }}</div>
                 <div class="card-stats">
                     <div class="card-count">{{ item.count }}</div>
@@ -81,7 +86,7 @@
                 {{ selectedFilterValue() }}
             </h2>
             <button class="back-btn" (click)="goBack()">
-                <i class="fa-solid fa-arrow-left me-2"></i>BACK TO OVERVIEW
+                <i class="bi bi-arrow-left me-2"></i>BACK TO OVERVIEW
             </button>
         </div>
 
@@ -140,7 +145,7 @@
 
                 <!-- Empty State -->
                 <div class="empty-state" *ngIf="filteredStocks().length === 0">
-                    <i class="fa-solid fa-chart-bar empty-icon"></i>
+                    <i class="bi bi-bar-chart empty-icon"></i>
                     <p>No stocks found matching these criteria.</p>
                 </div>
             </div>

@@ -1,13 +1,12 @@
 <div class="app-container" data-theme="light">
 
-  <app-header [searchQuery]="searchQuery" [selectedQuarter]="selectedQuarter" [selectedYear]="selectedYear"
-    [quarters]="quarters" [years]="years()" (toggleSidebar)="toggleSidebar()">
+  <app-header [searchQuery]="searchQuery" (toggleSidebar)="toggleSidebar()">
   </app-header>
 
   <app-sidebar [isOpen]="sidebarOpen()"></app-sidebar>
 
-  <!-- Mobile Overlay: Only visible on mobile when sidebar is OPEN -->
-  <div class="sidebar-overlay" [class.active]="isMobile() && sidebarOpen()" (click)="closeSidebar()">
+  <!-- Sidebar Overlay: Show when sidebar is open on screens where it's toggleable -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen()" (click)="closeSidebar()">
   </div>
 
   <router-outlet></router-outlet>

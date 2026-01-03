@@ -12,10 +12,6 @@ import { FormsModule } from '@angular/forms';
 export class HeaderComponent {
 
     @Input() searchQuery: any;
-    @Input() selectedQuarter: any;
-    @Input() selectedYear: any;
-    @Input() quarters: string[] = [];
-    @Input() years: number[] = [];
     @Output() toggleSidebar = new EventEmitter<void>();
 
     constructor() { }

@@ -96,11 +96,22 @@
      right: 0;
      bottom: 0;
      background: rgba(0, 0, 0, 0.5);
-     z-index: 80;
-     display: none;
+     z-index: 85;
+     opacity: 0;
+     visibility: hidden;
+     transition: opacity 0.3s ease, visibility 0.3s ease;
      backdrop-filter: blur(2px);
+     cursor: pointer;
  }
 
  .sidebar-overlay.active {
-     display: block;
+     opacity: 1;
+     visibility: visible;
+ }
+
+ /* Hide overlay on very wide screens where sidebar is always visible */
+ @media screen and (min-width: 1400px) {
+     .sidebar-overlay {
+         display: none;
+     }
  }

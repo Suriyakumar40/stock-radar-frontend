@@ -26,52 +26,24 @@ export class App {
   // Layout State
   // Default to false for mobile convenience if rendered on small screen initially, 
   // but logic below handles proper checking.
-  sidebarOpen = signal<boolean>(true);
+  sidebarOpen = signal<boolean>(false);
   isMobile = signal<boolean>(false);
 
   today = new Date();
-
-  // Dropdown State
-  quarters = ['Mar', 'Jun', 'Sep', 'Dec'];
-  years = computed(() => {
-    const currentYear = new Date().getFullYear();
-    const startYear = 2022;
-    const years = [];
-    for (let y = startYear; y <= currentYear; y++) {
-      years.push(y);
-    }
-    return years;
-  });
-
-  selectedQuarter = signal('Sep');
-  selectedYear = signal(new Date().getFullYear());
 
   private stockService = inject(FundamentalService);
 
   constructor() { }
 
   ngOnInit() {
-    this.checkScreenSize();
   }
 
-  @HostListener('window:resize', [])
-  onResize() {
-    this.checkScreenSize();
-  }
-
-  checkScreenSize() {
-    // Standard Bootstrap Breakpoint for Large screens
-    const isMobileCheck = window.innerWidth < 1024;
-    this.isMobile.set(isMobileCheck);
-    this.sidebarOpen.set(false);
-
-    // // Auto-close on mobile, auto-open on desktop initial load if preferred, 
-    // // or just let the toggle handle it. Here we enforce a smart default.
-    // if (isMobileCheck) {
-    //   this.sidebarOpen.set(false);
-    // } else {
-    //   this.sidebarOpen.set(true);
-    // }
+  @HostListener('window:keydown.escape', [])
+  onEscapeKey() {
+    // Close sidebar when ESC is pressed
+    if (this.sidebarOpen()) {
+      this.closeSidebar();
+    }
   }
 
   // --- ACTIONS ---
@@ -81,7 +53,7 @@ export class App {
   }
 
   closeSidebar() {
-    // Only used by overlay on mobile
+    // Close sidebar (used by overlay click and ESC key)
     this.sidebarOpen.set(false);
   }
 }
