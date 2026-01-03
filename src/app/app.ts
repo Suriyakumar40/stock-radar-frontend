@@ -57,3 +57,4 @@ export class App {
     this.sidebarOpen.set(false);
   }
 }
+
