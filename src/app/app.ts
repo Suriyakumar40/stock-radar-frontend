@@ -5,6 +5,7 @@ import { FooterComponent } from './core/layout/footer/footer.component';
 import { SidebarComponent } from './core/layout/sidebar/sidebar.component';
 import { HeaderComponent } from './core/layout/header/header.component';
 import { FundamentalService } from './features/fundamental/services/fundamental.service';
+import { CommonService } from './shared/services/common.service';
 
 @Component({
   selector: 'app-root',
@@ -14,47 +15,42 @@ import { FundamentalService } from './features/fundamental/services/fundamental.
 })
 export class App {
 
-  // State
-  currentView = signal<'indices' | 'industry' | 'rating'>('indices');
-  selectedFilterType = signal<string | null>(null);
-  selectedFilterValue = signal<string | null>(null);
-  detailRatingFilter = signal<string>('ALL');
+  // Inject services
+  private commonService = inject(CommonService);
 
-  // Search State
-  searchQuery = signal<string>('');
+  // Access common service state via getters
+  get sidebarOpen() {
+    const sidebarState = this.commonService.sidebarOpen;
+    return sidebarState;
+  }
 
-  // Layout State
-  // Default to false for mobile convenience if rendered on small screen initially, 
-  // but logic below handles proper checking.
-  sidebarOpen = signal<boolean>(false);
-  isMobile = signal<boolean>(false);
+  get searchQuery() { return this.commonService.globalSearch; }
 
   today = new Date();
-
-  private stockService = inject(FundamentalService);
 
   constructor() { }
 
   ngOnInit() {
+    // Initialize common service
+    this.commonService.checkScreenSize();
   }
 
   @HostListener('window:keydown.escape', [])
   onEscapeKey() {
     // Close sidebar when ESC is pressed
-    if (this.sidebarOpen()) {
-      this.closeSidebar();
+    if (this.commonService.sidebarOpen()) {
+      this.commonService.closeSidebar();
     }
   }
 
   // --- ACTIONS ---
 
   toggleSidebar() {
-    this.sidebarOpen.update(v => !v);
+    this.commonService.toggleSidebar();
   }
 
   closeSidebar() {
-    // Close sidebar (used by overlay click and ESC key)
-    this.sidebarOpen.set(false);
+    this.commonService.closeSidebar();
   }
 }
 

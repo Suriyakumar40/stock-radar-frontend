@@ -164,23 +164,22 @@
  }
 
  .card-title {
-     font-size: 18px;
+     font-size: 17px;
      font-weight: 700;
-     margin-bottom: 16px;
+     margin-bottom: 10px;
      color: var(--text-primary);
  }
 
  .card-count {
-     font-size: 48px;
-     font-weight: 700;
+     font-size: 35px;
+     font-weight: 600;
      font-family: 'Space Mono', monospace;
-     line-height: 1;
      color: var(--card-color, var(--text-primary));
  }
 
  .card-breakdown {
      text-align: right;
-     font-size: 11px;
+     font-size: 12.5px;
      color: var(--text-secondary);
      line-height: 1.4;
  }
