@@ -1,5 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { catchError, map } from 'rxjs/operators';
+import { QuarterResult } from '../../features/fundamental/model/quarter-result.model';
+import { ListOfStocks, ListOfStocksModel } from '../../features/fundamental/model/list-of-stocks.model';
 
 @Injectable({
     providedIn: 'root' // This makes it available application-wide as a singleton
@@ -11,10 +16,9 @@ export class CommonService {
     private _loading = signal<boolean>(false);
     private _globalSearch = signal<string>('');
 
-
     // Application Settings
     private _notifications = signal<any[]>([]);
-
+    private _stocks = signal<ListOfStocks[] | null>(null);
 
     // Public read-only signals
     readonly sidebarOpen = this._sidebarOpen.asReadonly();
@@ -30,7 +34,7 @@ export class CommonService {
     );
     readonly isDesktop = computed(() => !this._isMobile());
 
-    constructor() {
+    constructor(private http: HttpClient) {
         this.initializeService();
     }
 
@@ -172,5 +176,23 @@ export class CommonService {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(key);
         }
+    }
+
+    getStocksList(): Observable<ListOfStocks[]> {
+        if (this._stocks() && this._stocks()!.length > 0) {
+            return of(this._stocks()!);
+        }
+        // if (!http) {
+        //     throw new Error('HttpClient must be provided for first fetch');
+        // }
+        const url = `${environment.apiUrl}/financial-results/getAllStocks`;
+        return this.http.get<{ message: string; data: ListOfStocks[] }>(url).pipe(
+            map(res => {
+                const result = ListOfStocksModel.mapDbToListOfStocks(res.data);
+                this._stocks.set(result);
+                return result;
+            }),
+            catchError(err => of([]))
+        );
     }
 }

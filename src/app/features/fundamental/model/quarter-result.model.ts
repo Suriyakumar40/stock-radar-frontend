@@ -2,12 +2,34 @@
 export interface QuarterResult {
     symbol: string;
     industry: string;
-    index: string;
-    sales: number;
-    profit: number;
+    indices: string;
+    salesGrowth: number;
+    profitGrowth: number;
     opm: number;
-    score: number;
+    ratingScore: number;
     rating: string;
-    catScore: number;
-    indScore: number;
+    isFno: boolean;
+    fii: string;
+    dii: string;
+    promotor: string;
+    boardMeetingDate: string;
 }
+
+export class QuarterResultModel {
+    static mapDbToQuarterResults(items: Array<any>): Array<QuarterResult> {
+        if (!items || items.length === 0) {
+            throw new Error('Invalid data');
+        }
+        return items.map(item => {
+            return {
+                ...item,
+                salesGrowth: parseFloat(item.yoySalesGrowth),
+                profitGrowth: parseFloat(item.yoyProfitGrowth),
+                fii: parseFloat(item.fii),
+                dii: parseFloat(item.dii),
+                promotor: parseFloat(item.promotor),
+            };
+        });
+    }
+}
+

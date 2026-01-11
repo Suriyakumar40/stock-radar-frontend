@@ -1,7 +1,6 @@
 import { Component, computed, HostListener, inject, signal, TemplateRef, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
-import { FooterComponent } from './core/layout/footer/footer.component';
 import { SidebarComponent } from './core/layout/sidebar/sidebar.component';
 import { HeaderComponent } from './core/layout/header/header.component';
 import { FundamentalService } from './features/fundamental/services/fundamental.service';
@@ -9,13 +8,13 @@ import { CommonService } from './shared/services/common.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FormsModule, HeaderComponent, SidebarComponent, FooterComponent],
+  imports: [RouterOutlet, FormsModule, HeaderComponent, SidebarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
 
-  // Inject services
+  // Inject servicesa
   private commonService = inject(CommonService);
 
   // Access common service state via getters
