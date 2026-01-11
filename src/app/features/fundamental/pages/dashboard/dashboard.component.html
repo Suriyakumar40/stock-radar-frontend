@@ -121,8 +121,11 @@
             <div class="stock-list">
                 <div class="stock-row" *ngFor="let stock of filteredStocks(); let i = index">
                     <!-- Mobile Label handled via CSS or simple stacking -->
-                    <div class="rank">#{{ i + 1 }}</div>
-                    <div class="symbol">{{ stock.symbol }}</div>
+                    <div class="rank">{{ i + 1 }}</div>
+                    <div class="symbol">
+                        {{ stock.symbol }}
+                        <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" style="font-size: 1.2em;"></i>
+                    </div>
                     <div class="industry text-truncate" title="{{stock.industry}}">{{ stock.industry }}</div>
                     <div class="metric text-end" [class.positive]="stock.salesGrowth > 0" [class.neutral]="stock.salesGrowth <= 0">
                         <span class="d-md-none text-muted me-2">Sales:</span>{{ stock.salesGrowth }}%
@@ -136,8 +139,7 @@
                     </div>
                     <div class="text-center">
                         <span class="d-md-none text-muted me-2">Score:</span>
-                        <span class="score-badge" [style.background]="getScoreColor(stock.ratingScore)">{{ stock.ratingScore
-                            }}/9</span>
+                        <span class="score-badge" [style.background]="getScoreColor(stock.ratingScore)">{{ stock.ratingScore }}/9</span>
                     </div>
                     <div class="text-center">
                         <span class="rating-badge rating-{{ stock.rating | lowercase }}">{{ stock.rating }}</span>
