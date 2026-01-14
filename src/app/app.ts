@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { SidebarComponent } from './core/layout/sidebar/sidebar.component';
 import { HeaderComponent } from './core/layout/header/header.component';
-import { FundamentalService } from './features/fundamental/services/fundamental.service';
 import { CommonService } from './shared/services/common.service';
 
 @Component({
@@ -14,7 +13,7 @@ import { CommonService } from './shared/services/common.service';
 })
 export class App {
 
-  // Inject servicesa
+  // Inject services
   private commonService = inject(CommonService);
 
   // Access common service state via getters
@@ -27,10 +26,13 @@ export class App {
 
   today = new Date();
 
-  constructor() { }
+  constructor() {
+
+  }
 
   ngOnInit() {
     // Initialize common service
+    this.commonService.fetchStocksList().subscribe();
     this.commonService.checkScreenSize();
   }
 
@@ -41,9 +43,7 @@ export class App {
       this.commonService.closeSidebar();
     }
   }
-
   // --- ACTIONS ---
-
   toggleSidebar() {
     this.commonService.toggleSidebar();
   }

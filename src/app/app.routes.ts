@@ -3,11 +3,15 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: 'fundamental',
+        redirectTo: 'quarter-results',
         pathMatch: 'full'
     },
     {
-        path: 'fundamental',
-        loadChildren: () => import('./features/fundamental/fundamental.routes').then(m => m.ROUTES)
+        path: 'quarter-results',
+        loadComponent: () => import('./features/quarter-results/pages/quarter-results.component').then(m => m.QuarterResultsComponent)
+    },
+    {
+        path: 'shareholding',
+        loadComponent: () => import('./features/shareholding/pages/shareholding.component').then(m => m.ShareholdingComponent)
     }
 ];

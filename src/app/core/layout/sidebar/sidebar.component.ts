@@ -13,8 +13,11 @@ export class SidebarComponent {
 
     @Input() isOpen = false;
 
+    public selectedMenu = signal<string>('');
+
     constructor() { }
 
     ngOnInit() {
+        this.selectedMenu.set(window.location.pathname.replace('/', ''));
     }
 }

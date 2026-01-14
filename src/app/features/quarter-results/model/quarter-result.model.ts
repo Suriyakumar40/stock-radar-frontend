@@ -1,5 +1,5 @@
-// --- 1. MODEL / INTERFACE ---
-export interface QuarterResult {
+import moment  from "moment";
+export interface IQuarterResult {
     symbol: string;
     industry: string;
     indices: string;
@@ -16,7 +16,7 @@ export interface QuarterResult {
 }
 
 export class QuarterResultModel {
-    static mapDbToQuarterResults(items: Array<any>): Array<QuarterResult> {
+    static mapDbToQuarterResults(items: Array<any>): Array<IQuarterResult> {
         if (!items || items.length === 0) {
             throw new Error('Invalid data');
         }
@@ -28,6 +28,7 @@ export class QuarterResultModel {
                 fii: parseFloat(item.fii),
                 dii: parseFloat(item.dii),
                 promotor: parseFloat(item.promotor),
+                boardMeetingDate: item.boardMeetingDate ? moment(item.boardMeetingDate, 'YYYY-MM-DD').format('DD-MMM-YYYY') : 'N/A'
             };
         });
     }

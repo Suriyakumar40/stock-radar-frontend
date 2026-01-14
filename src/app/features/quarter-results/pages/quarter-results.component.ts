@@ -2,21 +2,21 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import moment from 'moment';
-import { FundamentalService } from '../../services/fundamental.service';
-import { CommonService } from '../../../../shared';
+import { QuarterResultService } from '../services/quarter-result.service';
+import { CommonService } from '../../../shared';
 import { BsDatepickerConfig, BsDatepickerModule, BsDatepickerViewMode } from 'ngx-bootstrap/datepicker';
 import { forkJoin } from 'rxjs';
-import { INDICES, RATING } from '../../../../shared/constants';
+import { INDICES, RATING } from '../../../shared/constants';
 
 @Component({
-    selector: 'app-dashboard',
+    selector: 'app-quarter-results',
     standalone: true,
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss'],
+    templateUrl: './quarter-results.component.html',
+    styleUrls: ['./quarter-results.component.scss'],
     imports: [CommonModule, FormsModule, BsDatepickerModule],
-    providers: [FundamentalService]
+    providers: [QuarterResultService]
 })
-export class DashboardComponent {
+export class QuarterResultsComponent {
     // State
     currentView = signal<'indices' | 'industry' | 'rating' | null>(null);
     selectedFilterType = signal<string | null>(null);
@@ -30,7 +30,7 @@ export class DashboardComponent {
     disabledMonths: Date[] = [];
 
     // Use inject() to properly resolve the service without constructor reflection issues
-    private fundamentalService = inject(FundamentalService);
+    private quarterResultService = inject(QuarterResultService);
     private commonService = inject(CommonService);
 
     constructor() {
@@ -46,13 +46,11 @@ export class DashboardComponent {
 
     ngOnInit() {
         const formattedDate = moment(this.periodEnd).format('YYYY-MM-DD');
-
         forkJoin({
-            stocks: this.commonService.getStocksList(),
-            quarterResults: this.fundamentalService.fetchQuarterResults(formattedDate)
-        }).subscribe(({ stocks, quarterResults }) => {
+            quarterResults: this.quarterResultService.fetchQuarterResults(formattedDate)
+        }).subscribe(({ quarterResults }) => {
+            const stocks = this.commonService.getStocksList();
             this.currentView.set('indices');
-            // Handle stocks and quarterResults here
         });
     }
 
@@ -75,7 +73,7 @@ export class DashboardComponent {
         this.detailRatingFilter.set(rating);
     }
     detailViewActive = computed(() => this.selectedFilterType() !== null);
-    quarterResults = this.fundamentalService.getQuarterResults();
+    quarterResults = this.quarterResultService.getQuarterResults();
     indicesData = computed(() => {
         const indices = INDICES;
         return indices.map(index => {
@@ -222,7 +220,7 @@ export class DashboardComponent {
             if (this.periodEnd.getDate() !== lastDay.getDate()) {
                 this.periodEnd = lastDay;
                 const formattedDate = moment(this.periodEnd).format('YYYY-MM-DD');
-                this.fundamentalService.fetchQuarterResults(formattedDate).subscribe(() => {
+                this.quarterResultService.fetchQuarterResults(formattedDate).subscribe(() => {
                     // Data refreshed
                 });
             }

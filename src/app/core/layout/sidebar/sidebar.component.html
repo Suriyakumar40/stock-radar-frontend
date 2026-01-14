@@ -3,33 +3,15 @@
         <div class="sidebar-title">Financial Analysis</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link active" (click)="$event.preventDefault()">
+                <a href="/quarter-results" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'quarter-results' }" (click)="selectedMenu.set('quarter-results')">
                     <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
-                    <span class="link-text">Results Dashboard</span>
+                    <span class="link-text">Quarter Results</span>
                 </a>
-            </li>
+            </li> 
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
-                    <span class="sidebar-icon"><i class="bi bi-clipboard-data"></i></span>
-                    <span class="link-text">Results List</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="sidebar-section">
-        <div class="sidebar-title">Shareholding</div>
-        <ul class="sidebar-menu">
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
+                <a href="/shareholding" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'shareholding' }" (click)="selectedMenu.set('shareholding')">
                     <span class="sidebar-icon"><i class="bi bi-briefcase-fill"></i></span>
-                    <span class="link-text">Shareholding Dashboard</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" (click)="$event.preventDefault()">
-                    <span class="sidebar-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
-                    <span class="link-text">Shareholding List</span>
+                    <span class="link-text">Shareholding</span>
                 </a>
             </li>
         </ul>

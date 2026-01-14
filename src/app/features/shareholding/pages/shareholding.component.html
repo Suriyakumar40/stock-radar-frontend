@@ -1,0 +1,105 @@
+<main class="main-content">
+    <h1 class="page-title">Shareholding</h1>
+    <p class="page-subtitle">Latest vs Previous Date Analysis • {{ summary().total_stocks }} Stocks Tracked</p>
+
+    <!-- Index Breakdown -->
+    <div class="index-section">
+        <div class="index-grid">
+            <div class="index-card" *ngFor="let idx of indexStats()" (click)="filterByIndex(idx.index)">
+                <div class="index-card-title">{{ idx.index.replace('NIFTY ', '') }}</div>
+                <div class="trend-row">
+                    <span class="trend-label">Total Stocks</span>
+                    <span class="trend-value">{{ idx.total }}</span>
+                </div>
+                <div class="trend-row">
+                    <span class="trend-label">Promoter ↑</span>
+                    <span class="trend-value text-up">{{ idx.promoter_up }}</span>
+                </div>
+                <div class="trend-row">
+                    <span class="trend-label">FII ↑</span>
+                    <span class="trend-value text-up">{{ idx.fii_up }}</span>
+                </div>
+                <div class="trend-row">
+                    <span class="trend-label">DII ↑</span>
+                    <span class="trend-value text-up">{{ idx.dii_up }}</span>
+                </div>
+                <div class="trend-row">
+                    <span class="trend-label">Both ↑</span>
+                    <span class="trend-value text-explosive">{{ idx.both_up }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="currentFilter() === 'all'" (click)="setFilter('all')">All
+            Stocks</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'both-up'" (click)="setFilter('both-up')">🧠 Both
+            FII & DII ↑</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'fii-up'" (click)="setFilter('fii-up')">FII
+            Increasing</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'dii-up'" (click)="setFilter('dii-up')">DII
+            Increasing</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'promoter-up'"
+            (click)="setFilter('promoter-up')">Promoter Increasing</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'fii-down'" (click)="setFilter('fii-down')">FII
+            Decreasing</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'dii-down'" (click)="setFilter('dii-down')">DII
+            Decreasing</button>
+    </div>
+
+    <!-- Stock Table -->
+    <div class="stock-table">
+        <div class="table-header">
+            <div>RANK</div>
+            <div>SYMBOL</div>
+            <div>INDUSTRY</div>
+            <div class="text-center">PROMOTER</div>
+            <div class="text-center">PROMO Δ</div>
+            <div class="text-center">FII %</div>
+            <div class="text-center">FII Δ</div>
+            <div class="text-center">DII %</div>
+            <div class="text-center">DII Δ</div>
+            <div class="text-center">PUBLIC</div>
+            <div>INDEX</div>
+        </div>
+
+        <div class="table-body">
+            <div class="table-row" *ngFor="let stock of filteredStocks(); let i = index">
+                <div class="rank">#{{ i + 1 }}</div>
+                <div class="symbol">{{ stock.symbol }}</div>
+                <div class="industry" title="{{stock.industry}}">{{ stock.industry }}</div>
+
+                <div class="metric-value">{{ stock.promoter }}%</div>
+                <div class="metric-value" [ngClass]="getChangeClass(stock.promoter_change)">
+                    {{ stock.promoter_change > 0 ? '+' : '' }}{{ stock.promoter_change }}
+                    <span class="trend-icon">{{ getTrendIcon(stock.promoter_change) }}</span>
+                </div>
+
+                <div class="metric-value">{{ stock.fii }}%</div>
+                <div class="metric-value" [ngClass]="getChangeClass(stock.fii_change)">
+                    {{ stock.fii_change > 0 ? '+' : '' }}{{ stock.fii_change }}
+                    <span class="trend-icon">{{ getTrendIcon(stock.fii_change) }}</span>
+                </div>
+
+                <div class="metric-value">{{ stock.dii }}%</div>
+                <div class="metric-value" [ngClass]="getChangeClass(stock.dii_change)">
+                    {{ stock.dii_change > 0 ? '+' : '' }}{{ stock.dii_change }}
+                    <span class="trend-icon">{{ getTrendIcon(stock.dii_change) }}</span>
+                </div>
+
+                <div class="metric-value">{{ stock.public }}%</div>
+                <div class="metric-value text-secondary small">
+                    {{ stock.index.replace('NIFTY ', '') }}
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="filteredStocks().length === 0">
+                <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                <div>No stocks match your filters</div>
+            </div>
+        </div>
+    </div>
+</main>

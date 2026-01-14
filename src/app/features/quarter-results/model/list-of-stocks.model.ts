@@ -1,4 +1,4 @@
-export interface ListOfStocks {
+export interface IListOfStocks {
     id: number;
     industry: string;
     sector?: string | null;
@@ -16,7 +16,7 @@ export interface ListOfStocks {
 }
 
 export class ListOfStocksModel {
-    static mapDbToListOfStocks(items: Array<any>): Array<ListOfStocks> {
+    static mapDbToListOfStocks(items: Array<any>): Array<IListOfStocks> {
         if (!items || items.length === 0) {
             throw new Error('Invalid data');
         }

@@ -126,7 +126,7 @@
                         {{ stock.symbol }}
                         <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" style="font-size: 1.2em;"></i>
                     </div>
-                    <div class="industry text-truncate" title="{{stock.industry}}">{{ stock.industry }}</div>
+                    <div class="industry text-truncate" title="{{stock.industry}}">{{ stock.industry }} ({{ stock.boardMeetingDate }})</div>
                     <div class="metric text-end" [class.positive]="stock.salesGrowth > 0" [class.neutral]="stock.salesGrowth <= 0">
                         <span class="d-md-none text-muted me-2">Sales:</span>{{ stock.salesGrowth }}%
                     </div>

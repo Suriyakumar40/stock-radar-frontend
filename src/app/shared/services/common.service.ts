@@ -3,8 +3,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { catchError, map } from 'rxjs/operators';
-import { QuarterResult } from '../../features/fundamental/model/quarter-result.model';
-import { ListOfStocks, ListOfStocksModel } from '../../features/fundamental/model/list-of-stocks.model';
+import { IListOfStocks, ListOfStocksModel } from '../../features/quarter-results/model/list-of-stocks.model';
 
 @Injectable({
     providedIn: 'root' // This makes it available application-wide as a singleton
@@ -18,7 +17,7 @@ export class CommonService {
 
     // Application Settings
     private _notifications = signal<any[]>([]);
-    private _stocks = signal<ListOfStocks[] | null>(null);
+    private _stocks = signal<IListOfStocks[] | null>(null);
 
     // Public read-only signals
     readonly sidebarOpen = this._sidebarOpen.asReadonly();
@@ -178,7 +177,11 @@ export class CommonService {
         }
     }
 
-    getStocksList(): Observable<ListOfStocks[]> {
+    getStocksList() {
+         return this._stocks.asReadonly();
+    }
+
+    fetchStocksList(): Observable<IListOfStocks[]> {
         if (this._stocks() && this._stocks()!.length > 0) {
             return of(this._stocks()!);
         }
@@ -186,7 +189,7 @@ export class CommonService {
         //     throw new Error('HttpClient must be provided for first fetch');
         // }
         const url = `${environment.apiUrl}/financial-results/getAllStocks`;
-        return this.http.get<{ message: string; data: ListOfStocks[] }>(url).pipe(
+        return this.http.get<{ message: string; data: IListOfStocks[] }>(url).pipe(
             map(res => {
                 const result = ListOfStocksModel.mapDbToListOfStocks(res.data);
                 this._stocks.set(result);

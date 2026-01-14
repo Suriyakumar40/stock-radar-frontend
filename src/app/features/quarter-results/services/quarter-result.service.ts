@@ -3,17 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { catchError, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { QuarterResult, QuarterResultModel } from "../model/quarter-result.model";
+import { IQuarterResult, QuarterResultModel } from "../model/quarter-result.model";
 
 // --- 2. SERVICE ---
 @Injectable()
-export class FundamentalService {
+export class QuarterResultService {
 
     private apiUrl = environment.apiUrl;
     private fundamentalServiceUrl = `${environment.apiUrl}/fundamentals`;
 
     // Using Signals for reactive state management
-    private quarterResults = signal<QuarterResult[]>([]);
+    private quarterResults = signal<IQuarterResult[]>([]);
 
     constructor(private http: HttpClient) {
     }
@@ -22,7 +22,7 @@ export class FundamentalService {
         return this.quarterResults.asReadonly();
     }
 
-    fetchQuarterResults(periodEnd: string): Observable<QuarterResult[]> {
+    fetchQuarterResults(periodEnd: string): Observable<IQuarterResult[]> {
         if (!periodEnd) {
             throw new Error('periodEnd is required');
         }
