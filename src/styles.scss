@@ -58,6 +58,19 @@
      margin-left: 0;
  }
 
+ .main-container {
+     max-width: 1600px;
+     margin: 0 auto;
+     padding: 24px;
+ }
+
+ /* Header */
+ .page-header {
+     margin-bottom: 32px;
+     padding-bottom: 20px;
+     border-bottom: 1px solid var(--border);
+ }
+
  /* Mobile Handling */
  @media (max-width: 1024px) {
      .main-content {
@@ -108,6 +121,8 @@
      opacity: 1;
      visibility: visible;
  }
+
+
 
  /* Hide overlay on very wide screens where sidebar is always visible */
  @media screen and (min-width: 1400px) {

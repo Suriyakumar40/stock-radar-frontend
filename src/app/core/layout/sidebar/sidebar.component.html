@@ -18,6 +18,18 @@
     </div>
 
     <div class="sidebar-section">
+        <div class="sidebar-title">Momentum</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="/momentum" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'momentum' }" (click)="selectedMenu.set('momentum')">
+                    <span class="sidebar-icon"><i class="bi bi-rocket-takeoff"></i></span>
+                    <span class="link-text">Momentum</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
         <div class="sidebar-title">Multi-Bagger</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">

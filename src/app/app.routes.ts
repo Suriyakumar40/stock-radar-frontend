@@ -13,5 +13,9 @@ export const routes: Routes = [
     {
         path: 'shareholding',
         loadComponent: () => import('./features/shareholding/pages/shareholding.component').then(m => m.ShareholdingComponent)
+    },
+    {
+        path: 'momentum',
+        loadChildren: () => import('./features/momentum/momentum.routes').then(m => m.momentumRoutes)
     }
 ];

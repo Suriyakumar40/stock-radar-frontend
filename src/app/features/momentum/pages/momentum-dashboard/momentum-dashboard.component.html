@@ -1,0 +1,351 @@
+<div class="main-content">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-graph-up-arrow"></i> Momentum Stocks Dashboard
+                </h1>
+                <p class="page-subtitle">Real-time momentum analysis with quality filters</p>
+            </div>
+            <div class="text-end">
+                <div class="last-updated">
+                    <i class="bi bi-clock-history"></i> Updated: {{ lastUpdated }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div class="alert-info-custom">
+        <div class="d-flex align-items-start">
+            <i class="bi bi-lightbulb-fill fs-4 me-3"></i>
+            <div>
+                <strong>New Discovery:</strong> High delivery (45%+) + Falling price (-2% to -5%) = Strong Buy Signal!
+                <br><small class="text-secondary">Institutions buying the dip while weak hands sell. Proven: Dec 8
+                    example gave +27.5% in 20 days.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3" *ngFor="let card of statsCards">
+            <div class="stats-card" [class]="card.type" (click)="filterByRating(card.type)">
+                <div class="stats-label">{{ card.label }}</div>
+                <div class="stats-value">{{ card.value }}</div>
+                <div class="stats-description" [innerHTML]="card.description"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" [class.active]="activeTab === 'all'" (click)="setActiveTab('all')" type="button">
+                <i class="bi bi-list-ul"></i> All Stocks
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" [class.active]="activeTab === 'index'" (click)="setActiveTab('index')"
+                type="button">
+                <i class="bi bi-collection"></i> By Index
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" [class.active]="activeTab === 'industry'" (click)="setActiveTab('industry')"
+                type="button">
+                <i class="bi bi-building"></i> By Industry
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+        <!-- All Stocks View -->
+        <div class="tab-pane" [class.show]="activeTab === 'all'" [class.active]="activeTab === 'all'">
+
+            <!-- Search & Filters -->
+            <div class="search-container">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary">
+                                <i class="bi bi-search text-secondary"></i>
+                            </span>
+                            <input type="text" class="form-control" [(ngModel)]="searchTerm"
+                                (ngModelChange)="applyFilters()" placeholder="Search by symbol or company...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" [(ngModel)]="filterIndex" (ngModelChange)="applyFilters()">
+                            <option value="">All Indices</option>
+                            <option value="NIFTY 50">NIFTY 50</option>
+                            <option value="NIFTY NEXT 50">NIFTY NEXT 50</option>
+                            <option value="NIFTY MIDCAP 150">NIFTY MIDCAP 150</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" [(ngModel)]="filterRating" (ngModelChange)="applyFilters()">
+                            <option value="">All Ratings</option>
+                            <option value="strong-buy">Strong Buy</option>
+                            <option value="buy">Buy</option>
+                            <option value="accumulate">Accumulate</option>
+                            <option value="hold">Hold</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" [(ngModel)]="filterDelivery" (ngModelChange)="applyFilters()">
+                            <option value="">All Delivery %</option>
+                            <option value="50">≥50%</option>
+                            <option value="45">≥45%</option>
+                            <option value="40">≥40%</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stocks Table -->
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-trophy"></i> Rank</th>
+                                <th>Symbol</th>
+                                <th>Index</th>
+                                <th>Industry</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end">52W %</th>
+                                <th class="text-end">Vol %</th>
+                                <th class="text-end">Dlv %</th>
+                                <th class="text-end">Sales %</th>
+                                <th class="text-end">Profit %</th>
+                                <th class="text-center">Score</th>
+                                <th class="text-center">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let stock of filteredStocks" (click)="showStockDetail(stock)">
+                                <td class="text-secondary">#{{ stock.rank }}</td>
+                                <td><span class="stock-symbol">{{ stock.symbol }}</span></td>
+                                <td class="text-secondary small">{{ stock.index }}</td>
+                                <td class="text-secondary small">{{ stock.industry }}</td>
+                                <td class="text-end">{{ formatCurrency(stock.current_price) }}</td>
+                                <td class="text-end">
+                                    <i [class]="getTrendIcon(stock.dist_from_52w_high)"></i>
+                                    {{ stock.dist_from_52w_high.toFixed(1) }}%
+                                </td>
+                                <td class="text-end">
+                                    <i [class]="getTrendIcon(stock.volume_trend_60d)"></i>
+                                    {{ stock.volume_trend_60d >= 0 ? '+' : '' }}{{ stock.volume_trend_60d.toFixed(1) }}%
+                                </td>
+                                <td class="text-end">{{ stock.delivery_avg_10d.toFixed(1) }}%</td>
+                                <td class="text-end trend-up">+{{ stock.sales_growth_yoy.toFixed(1) }}%</td>
+                                <td class="text-end trend-up">+{{ stock.profit_growth_yoy.toFixed(1) }}%</td>
+                                <td class="text-center">
+                                    <span class="badge-score" [class]="'badge-' + getRatingClass(stock.rating)">
+                                        {{ stock.total_score.toFixed(1) }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" [class]="'badge-' + getRatingClass(stock.rating)">
+                                        <i [class]="'bi ' + getRatingBadge(stock.rating).icon"></i>
+                                        {{ getRatingBadge(stock.rating).text }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- By Index View -->
+        <div class="tab-pane" [class.show]="activeTab === 'index'" [class.active]="activeTab === 'index'">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stats-card explosive" (click)="showIndexStocks('NIFTY 50')">
+                        <div class="stats-label">NIFTY 50</div>
+                        <div class="stats-value">50</div>
+                        <div class="stats-description">
+                            Avg Score: 5.01<br>
+                            Strong Momentum: 5 stocks<br>
+                            Top: EICHERMOT (8.0)
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-light">
+                                View Details <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card good" (click)="showIndexStocks('NIFTY NEXT 50')">
+                        <div class="stats-label">NIFTY NEXT 50</div>
+                        <div class="stats-value">50</div>
+                        <div class="stats-description">
+                            Avg Score: 4.55<br>
+                            Strong Momentum: 3 stocks<br>
+                            Top: CHOLAFIN (8.0)
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-light">
+                                View Details <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card exceptional" (click)="showIndexStocks('NIFTY MIDCAP 150')">
+                        <div class="stats-label">NIFTY MIDCAP 150</div>
+                        <div class="stats-value">150</div>
+                        <div class="stats-description">
+                            Avg Score: 4.32<br>
+                            Strong Momentum: 11 stocks<br>
+                            Top: NMDC (8.8)
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-light">
+                                View Details <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- By Industry View -->
+        <div class="tab-pane" [class.show]="activeTab === 'industry'" [class.active]="activeTab === 'industry'">
+            <div class="row g-3">
+                <div class="col-md-4" *ngFor="let industry of industries">
+                    <div class="stats-card good">
+                        <div class="stats-label">{{ industry.name }}</div>
+                        <div class="stats-value">{{ industry.count }}</div>
+                        <div class="stats-description">
+                            Avg Score: {{ industry.avg_score.toFixed(1) }}<br>
+                            Top: {{ industry.top_stock }}<br>
+                            <i class="bi bi-graph-up-arrow"></i> Strong sector
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Stock Detail Modal -->
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" *ngIf="selectedStock">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ selectedStock.symbol }}</h5>
+                <button type="button" class="btn-close" (click)="closeModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-secondary mb-3">Basic Info</h6>
+                        <div class="detail-row">
+                            <span class="detail-label">Current Price</span>
+                            <span class="detail-value">{{ formatCurrency(selectedStock.current_price) }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Index</span>
+                            <span class="detail-value">{{ selectedStock.index }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Industry</span>
+                            <span class="detail-value">{{ selectedStock.industry }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-secondary mb-3">Momentum Metrics</h6>
+                        <div class="detail-row">
+                            <span class="detail-label">Momentum Score</span>
+                            <span class="detail-value badge-score"
+                                [class]="'badge-' + getRatingClass(selectedStock.rating)">
+                                {{ selectedStock.total_score.toFixed(1) }}/9
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Rating</span>
+                            <span class="detail-value">
+                                <span class="badge" [class]="'badge-' + getRatingClass(selectedStock.rating)">
+                                    <i [class]="'bi ' + getRatingBadge(selectedStock.rating).icon"></i>
+                                    {{ getRatingBadge(selectedStock.rating).text }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Rank</span>
+                            <span class="detail-value">#{{ selectedStock.rank }} of {{ allStocks.length }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-secondary mb-3">Technical Indicators</h6>
+                        <div class="detail-row">
+                            <span class="detail-label">52-Week High Distance</span>
+                            <span class="detail-value"
+                                [class]="getTrendClass(selectedStock.dist_from_52w_high >= -5 ? 1 : -1)">
+                                {{ selectedStock.dist_from_52w_high.toFixed(1) }}%
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Volume Trend (60D)</span>
+                            <span class="detail-value" [class]="getTrendClass(selectedStock.volume_trend_60d)">
+                                {{ selectedStock.volume_trend_60d >= 0 ? '+' : '' }}{{
+                                selectedStock.volume_trend_60d.toFixed(1) }}%
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Delivery % (10D Avg)</span>
+                            <span class="detail-value" [class]="selectedStock.delivery_avg_10d >= 45 ? 'trend-up' : ''">
+                                {{ selectedStock.delivery_avg_10d.toFixed(1) }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-secondary mb-3">Fundamentals</h6>
+                        <div class="detail-row">
+                            <span class="detail-label">Sales Growth (YoY)</span>
+                            <span class="detail-value trend-up">+{{ selectedStock.sales_growth_yoy.toFixed(1) }}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Profit Growth (YoY)</span>
+                            <span class="detail-value trend-up">+{{ selectedStock.profit_growth_yoy.toFixed(1)
+                                }}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Quality Score</span>
+                            <span class="detail-value">
+                                {{ selectedStock.delivery_avg_10d >= 50 ? '⭐⭐⭐' : selectedStock.delivery_avg_10d >= 45 ?
+                                '⭐⭐' : '⭐' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-info-custom mt-4">
+                    <strong><i class="bi bi-info-circle"></i> Investment Insight:</strong><br>
+                    <div [innerHTML]="getInvestmentInsight(selectedStock)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal" (click)="closeModal()"></div>
