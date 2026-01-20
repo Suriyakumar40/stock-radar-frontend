@@ -3,9 +3,16 @@
         <h1 class="page-title mb-0">Quarter Results Dashboard</h1>
         <div class="d-flex gap-2">
             <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search stocks..." [(ngModel)]="search"
+                    (keydown.enter)="onSearchChange(search)">
+                <button class="btn btn-outline-secondary light-secondary-border" type="button" (click)="onSearchChange(search)">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+            <div class="input-group">
                 <input type="text" placeholder="Select Quarter Month" class="form-control" bsDatepicker #dp="bsDatepicker"
                     [bsConfig]="bsConfig" [maxDate]="maxDate" [(ngModel)]="periodEnd" [datesDisabled]="disabledMonths" (bsValueChange)="onDateSelect($event)">
-                <button class="btn btn-outline-secondary" type="button" (click)="dp.show()">
+                <button class="btn btn-outline-secondary light-secondary-border" type="button" (click)="dp.show()">
                     <i class="bi bi-calendar3"></i>  
                 </button>
             </div>
@@ -95,6 +102,8 @@
         <div class="filter-bar">
             <button class="filter-btn" [class.active]="detailRatingFilter() === 'ALL'"
                 (click)="setDetailRatingFilter('ALL')">ALL</button>
+            <button class="filter-btn" [class.active]="detailRatingFilter() === 'RECENT'"
+                (click)="setDetailRatingFilter('RECENT')">RECENT</button>
             <button class="filter-btn" [class.active]="detailRatingFilter() === 'EXPLOSIVE'"
                 (click)="setDetailRatingFilter('EXPLOSIVE')">EXPLOSIVE</button>
             <button class="filter-btn" [class.active]="detailRatingFilter() === 'EXCEPTIONAL'"

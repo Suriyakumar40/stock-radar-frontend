@@ -3,10 +3,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import moment from 'moment';
 import { QuarterResultService } from '../services/quarter-result.service';
-import { CommonService } from '../../../shared';
+import { CommonService } from '@shared/services/common.service';
 import { BsDatepickerConfig, BsDatepickerModule, BsDatepickerViewMode } from 'ngx-bootstrap/datepicker';
 import { forkJoin } from 'rxjs';
-import { INDICES, RATING } from '../../../shared/constants';
+import { INDICES, RATING } from '@shared/constants';
 
 @Component({
     selector: 'app-quarter-results',
@@ -18,11 +18,12 @@ import { INDICES, RATING } from '../../../shared/constants';
 })
 export class QuarterResultsComponent {
     // State
-    currentView = signal<'indices' | 'industry' | 'rating' | null>(null);
+    currentView = signal<'indices' | 'industry' | 'rating' | 'search' | null>(null);
     selectedFilterType = signal<string | null>(null);
     selectedFilterValue = signal<string | null>(null);
     detailRatingFilter = signal<string>('ALL');
     today = new Date();
+    search: string = '';
 
     periodEnd: Date = new Date(); // Default to today;
     bsConfig: Partial<BsDatepickerConfig>;
@@ -65,6 +66,7 @@ export class QuarterResultsComponent {
     }
 
     goBack() {
+        this.search = '';
         this.selectedFilterType.set(null);
         this.selectedFilterValue.set(null);
     }
@@ -72,6 +74,7 @@ export class QuarterResultsComponent {
     setDetailRatingFilter(rating: string) {
         this.detailRatingFilter.set(rating);
     }
+
     detailViewActive = computed(() => this.selectedFilterType() !== null);
     quarterResults = this.quarterResultService.getQuarterResults();
     indicesData = computed(() => {
@@ -106,21 +109,23 @@ export class QuarterResultsComponent {
                 name: industry,
                 count: indStocks.length,
                 avgScore,
-                explosive: indStocks.filter((s: any) => s.rating === 'EXPLOSIVE').length,
-                exceptional: indStocks.filter((s: any) => s.rating === 'EXCEPTIONAL').length,
-                good: indStocks.filter((s: any) => s.rating === 'GOOD').length,
+                explosive: indStocks.filter((s: any) => s.rating ===  RATING.EXPLOSIVE ).length,
+                exceptional: indStocks.filter((s: any) => s.rating ===  RATING.EXCEPTIONAL ).length,
+                good: indStocks.filter((s: any) => s.rating ===  RATING.GOOD ).length,
+                average: indStocks.filter((s: any) => s.rating ===  RATING.AVERAGE ).length,
+                poor: indStocks.filter((s: any) => s.rating ===  RATING.POOR ).length,
                 ratingClass: rating.toLowerCase()
             };
-        }).sort((a, b) => b.avgScore - a.avgScore).slice(0, 15);
+        }).sort((a, b) => b.avgScore - a.avgScore)
     });
 
     ratingData = computed(() => {
         const ratings = [
-            { name: 'EXPLOSIVE', scoreRange: '7-9', },
-            { name: 'EXCEPTIONAL', scoreRange: '5-6' },
-            { name: 'GOOD', scoreRange: '3-4' },
-            { name: 'AVERAGE', scoreRange: '2-1' },
-            { name: 'POOR', scoreRange: '0' }
+            { name: RATING.EXPLOSIVE, scoreRange: '7-9', },
+            { name: RATING.EXCEPTIONAL, scoreRange: '5-6' },
+            { name: RATING.GOOD, scoreRange: '3-4' },
+            { name: RATING.AVERAGE, scoreRange: '2-1' },
+            { name: RATING.POOR, scoreRange: '0' }
         ];
 
         return ratings.map(r => {
@@ -154,10 +159,18 @@ export class QuarterResultsComponent {
             stocks = stocks.filter((s: any) => s.industry === value);
         } else if (type === 'rating') {
             stocks = stocks.filter((s: any) => s.rating === value);
+        } else if (type === 'search') {
+            const searchLower = value!.toLowerCase();
+            stocks = stocks.filter((s: any) => s.symbol.toLowerCase().includes(searchLower));
         }
 
-        // 2. Filter by Detail Bar Rating
-        if (ratingFilter !== 'ALL') {
+        if (ratingFilter === 'RECENT') {
+            return stocks.sort((a, b) => {
+                const dateA = new Date(a.boardMeetingDate).getTime();
+                const dateB = new Date(b.boardMeetingDate).getTime();
+                return dateB - dateA;
+            });
+        } else if (ratingFilter !== 'ALL') {
             stocks = stocks.filter((s: any) => s.rating === ratingFilter);
         }
 
@@ -166,6 +179,10 @@ export class QuarterResultsComponent {
             if (b.ratingScore !== a.ratingScore) return b.ratingScore - a.ratingScore;
             return b.profitGrowth - a.profitGrowth;
         });
+
+
+
+
     });
 
     // --- UTILS ---
@@ -225,5 +242,10 @@ export class QuarterResultsComponent {
                 });
             }
         }
+    }
+
+    onSearchChange(value: string): void {
+        this.search = value;
+        this.showDetail('search', value);
     }
 }

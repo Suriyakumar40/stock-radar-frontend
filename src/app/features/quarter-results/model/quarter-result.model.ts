@@ -1,4 +1,5 @@
 import moment  from "moment";
+import { HelperModel } from "@shared/helper";
 export interface IQuarterResult {
     symbol: string;
     industry: string;
@@ -28,7 +29,7 @@ export class QuarterResultModel {
                 fii: parseFloat(item.fii),
                 dii: parseFloat(item.dii),
                 promotor: parseFloat(item.promotor),
-                boardMeetingDate: item.boardMeetingDate ? moment(item.boardMeetingDate, 'YYYY-MM-DD').format('DD-MMM-YYYY') : 'N/A'
+                boardMeetingDate: HelperModel.apiToUiDateFormat(item.boardMeetingDate)
             };
         });
     }

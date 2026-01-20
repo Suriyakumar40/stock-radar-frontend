@@ -1,9 +1,7 @@
 <main class="main-content">
     <h1 class="page-title">Shareholding</h1>
-    <p class="page-subtitle">Latest vs Previous Date Analysis • {{ summary().total_stocks }} Stocks Tracked</p>
-
     <!-- Index Breakdown -->
-    <div class="index-section">
+    <!-- <div class="index-section">
         <div class="index-grid">
             <div class="index-card" *ngFor="let idx of indexStats()" (click)="filterByIndex(idx.index)">
                 <div class="index-card-title">{{ idx.index.replace('NIFTY ', '') }}</div>
@@ -29,7 +27,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Filter Tabs -->
     <div class="filter-tabs">
@@ -48,55 +46,56 @@
         <button class="filter-tab" [class.active]="currentFilter() === 'dii-down'" (click)="setFilter('dii-down')">DII
             Decreasing</button>
     </div>
-
     <!-- Stock Table -->
     <div class="stock-table">
-        <div class="table-header">
+        <div class="table-header" style="position: sticky; top: 0; background: #fff; z-index: 2;">
             <div>RANK</div>
             <div>SYMBOL</div>
             <div>INDUSTRY</div>
-            <div class="text-center">PROMOTER</div>
-            <div class="text-center">PROMO Δ</div>
+            <div class="text-center">PROMOTER %</div>
             <div class="text-center">FII %</div>
-            <div class="text-center">FII Δ</div>
             <div class="text-center">DII %</div>
+            <div class="text-center">PUBLIC %</div>
+            <div class="text-center">PROMO Δ</div>
+            <div class="text-center">FII Δ</div>
             <div class="text-center">DII Δ</div>
-            <div class="text-center">PUBLIC</div>
-            <div>INDEX</div>
         </div>
 
-        <div class="table-body">
-            <div class="table-row" *ngFor="let stock of filteredStocks(); let i = index">
+        <div class="table-body" style="height: 600px; overflow-y: auto;">
+            <div class="table-row" *ngFor="let stock of filteredShareholdings(); let i = index">
                 <div class="rank">#{{ i + 1 }}</div>
-                <div class="symbol">{{ stock.symbol }}</div>
-                <div class="industry" title="{{stock.industry}}">{{ stock.industry }}</div>
-
+                <div class="symbol">
+                    {{ stock.symbol }}
+                <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock"
+                        style="font-size: 1.2em;"></i>
+                </div>
+                <div class="industry" title="{{stock.industry}}">{{ stock.industry }} ({{ stock.latestDate }})</div>
                 <div class="metric-value">{{ stock.promoter }}%</div>
-                <div class="metric-value" [ngClass]="getChangeClass(stock.promoter_change)">
-                    {{ stock.promoter_change > 0 ? '+' : '' }}{{ stock.promoter_change }}
-                    <span class="trend-icon">{{ getTrendIcon(stock.promoter_change) }}</span>
-                </div>
-
                 <div class="metric-value">{{ stock.fii }}%</div>
-                <div class="metric-value" [ngClass]="getChangeClass(stock.fii_change)">
-                    {{ stock.fii_change > 0 ? '+' : '' }}{{ stock.fii_change }}
-                    <span class="trend-icon">{{ getTrendIcon(stock.fii_change) }}</span>
-                </div>
-
                 <div class="metric-value">{{ stock.dii }}%</div>
-                <div class="metric-value" [ngClass]="getChangeClass(stock.dii_change)">
-                    {{ stock.dii_change > 0 ? '+' : '' }}{{ stock.dii_change }}
-                    <span class="trend-icon">{{ getTrendIcon(stock.dii_change) }}</span>
+                <div class="metric-value">{{ stock.public }}%</div>
+
+                <div class="metric-value" [ngClass]="getChangeClass(stock.promoterDiff)">
+                    <i class="bi"
+                        [ngClass]="{'text-danger bi-arrow-down': stock.promoterDiff < 0, 'text-success bi-arrow-up': stock.promoterDiff > 0}"></i>
+                    {{ stock.promoterDiff | number:'1.2-2' }}
                 </div>
 
-                <div class="metric-value">{{ stock.public }}%</div>
-                <div class="metric-value text-secondary small">
-                    {{ stock.index.replace('NIFTY ', '') }}
+                <div class="metric-value" [ngClass]="getChangeClass(stock.fiiDiff)">
+                    <i class="bi"
+                        [ngClass]="{'text-danger bi-arrow-down': stock.fiiDiff < 0, 'text-success bi-arrow-up': stock.fiiDiff > 0}"></i>
+                    {{ stock.fiiDiff | number:'1.2-2' }}
+                </div>
+
+                <div class="metric-value" [ngClass]="getChangeClass(stock.diiDiff)">
+                    <i class="bi"
+                        [ngClass]="{'text-danger bi-arrow-down': stock.diiDiff < 0, 'text-success bi-arrow-up': stock.diiDiff > 0}"></i>
+                    {{ stock.diiDiff | number:'1.2-2' }}
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div class="empty-state" *ngIf="filteredStocks().length === 0">
+            <div class="empty-state" *ngIf="filteredShareholdings().length === 0">
                 <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
                 <div>No stocks match your filters</div>
             </div>

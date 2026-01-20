@@ -6,7 +6,7 @@ import { ShareholdingService } from '../services/shareholding.service';
 import { CommonService } from '../../../shared';
 import { BsDatepickerConfig, BsDatepickerModule, BsDatepickerViewMode } from 'ngx-bootstrap/datepicker';
 import { forkJoin } from 'rxjs';
-import { INDICES, RATING } from '../../../shared/constants';
+import { HelperModel } from '@shared/helper';
 
 @Component({
     selector: 'app-shareholding',
@@ -24,21 +24,20 @@ export class ShareholdingComponent {
     currentFilter = signal<string>('all');
     indexFilter = signal<string | null>(null);
 
-    stocks = this.shareholdingService.getStocks();
-    summary = this.shareholdingService.getSummary();
+    shareholdings = this.shareholdingService.getShareholdings();
     indexStats = this.shareholdingService.getIndexStats();
 
     constructor() {
     }
 
     ngOnInit() {
-        // const formattedDate = moment(this.periodEnd).format('YYYY-MM-DD');
-        // forkJoin({
-        //     quarterResults: this.shareholdingService.fetchQuarterResults(formattedDate)
-        // }).subscribe(({ quarterResults }) => {
-        //     const stocks = this.commonService.getStocksList();
-        //     this.currentView.set('indices');
-        // });
+        const date = new Date();
+        const startOfMonth = HelperModel.getStartOfMonth(date);
+        const range = HelperModel.getLastSixMonths(startOfMonth);
+        forkJoin({
+            shareholding: this.shareholdingService.fetchShareholdingByRange(range.start, range.end)
+        }).subscribe(({ shareholding }) => {
+        });
     }
 
     // --- FILTERING LOGIC ---
@@ -53,8 +52,8 @@ export class ShareholdingComponent {
         this.currentFilter.set('all'); // Reset global filter to see all in this index
     }
 
-    filteredStocks = computed(() => {
-        let result = this.stocks();
+    filteredShareholdings = computed(() => {
+        let result = this.shareholdings();
         const filter = this.currentFilter();
         const index = this.indexFilter();
 
@@ -65,34 +64,43 @@ export class ShareholdingComponent {
 
         // 2. Logic Filters
         if (filter === 'both-up') {
-            result = result.filter(s => s.fii_change > 0 && s.dii_change > 0);
+            result = result.filter(s => s.fiiDiff > 0 && s.diiDiff > 0);
         } else if (filter === 'fii-up') {
-            result = result.filter(s => s.fii_change > 0);
+            result = result.filter(s => s.fiiDiff > 0);
         } else if (filter === 'dii-up') {
-            result = result.filter(s => s.dii_change > 0);
+            result = result.filter(s => s.diiDiff > 0);
         } else if (filter === 'promoter-up') {
-            result = result.filter(s => s.promoter_change > 0);
+            result = result.filter(s => s.promoterDiff > 0);
         } else if (filter === 'fii-down') {
-            result = result.filter(s => s.fii_change < 0);
+            result = result.filter(s => s.fiiDiff < 0);
         } else if (filter === 'dii-down') {
-            result = result.filter(s => s.dii_change < 0);
+            result = result.filter(s => s.diiDiff < 0);
         }
 
         // 3. Sort: Absolute Total Change (Activity)
         return result.sort((a, b) => {
-            const changeA = Math.abs(a.fii_change) + Math.abs(a.dii_change);
-            const changeB = Math.abs(b.fii_change) + Math.abs(b.dii_change);
-            return changeB - changeA;
+            switch (filter) {
+                case 'fii-up':
+                    return b.fiiDiff - a.fiiDiff; // Highest FII increase first
+                case 'fii-down':
+                    return a.fiiDiff - b.fiiDiff; // Most negative FII decrease first
+                case 'dii-up':
+                    return b.diiDiff - a.diiDiff; // Highest DII increase first
+                case 'dii-down':
+                    return a.diiDiff - b.diiDiff; // Most negative DII decrease first
+                case 'promoter-up':
+                    return b.promoterDiff - a.promoterDiff;
+                case 'both-up':
+                    // Sort by combined total increase
+                    return (b.fiiDiff + b.diiDiff) - (a.fiiDiff + a.diiDiff);
+                default:
+                    // Default: Sort by total activity (Absolute Change)
+                    const changeA = Math.abs(a.fiiDiff) + Math.abs(a.diiDiff);
+                    const changeB = Math.abs(b.fiiDiff) + Math.abs(b.diiDiff);
+                    return changeB - changeA;
+            }
         });
     });
-
-    // --- UTILS ---
-
-    getPercentage(val: number): string {
-        const total = this.summary().total_stocks;
-        if (!total) return '0';
-        return ((val / total) * 100).toFixed(1);
-    }
 
     getChangeClass(change: number): string {
         if (change > 0) return 'change-up';

@@ -178,7 +178,7 @@ export class CommonService {
     }
 
     getStocksList() {
-         return this._stocks.asReadonly();
+        return this._stocks.asReadonly();
     }
 
     fetchStocksList(): Observable<IListOfStocks[]> {

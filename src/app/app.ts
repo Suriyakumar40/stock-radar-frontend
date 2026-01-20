@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { SidebarComponent } from './core/layout/sidebar/sidebar.component';
 import { HeaderComponent } from './core/layout/header/header.component';
-import { CommonService } from './shared/services/common.service';
+import { CommonService } from '@shared/services/common.service';
 
 @Component({
   selector: 'app-root',
