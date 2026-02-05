@@ -1,6 +1,6 @@
 import { Injectable, signal } from "@angular/core";
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
+import { HttpClient } from '@angular/common/http'; 
+import { environment } from '@environments/environment';
 import { catchError, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { IQuarterResult, QuarterResultModel } from "../model/quarter-result.model";
@@ -36,6 +36,20 @@ export class QuarterResultService {
             }),
             catchError(error => {
                 console.error('Error fetching quarter results:', error);
+                return of([]);
+            })
+        );
+    }
+
+    fetchLatestQuarterResults(): Observable<any> {
+        const url = `${this.fundamentalServiceUrl}/get-latest-quarter-results`;
+        return this.http.get(url).pipe(
+            map((result: any) => {
+                const data = result && result.data ? result.data : []; 
+                return data;
+            }),
+            catchError(error => {
+                console.error('Error fetching latest quarter results:', error);
                 return of([]);
             })
         );

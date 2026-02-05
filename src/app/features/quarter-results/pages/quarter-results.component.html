@@ -1,4 +1,4 @@
-<main class="main-content">
+<main class="main-content bg-light">
     <div class="page-header d-flex justify-content-between align-items-center">
         <h1 class="page-title mb-0">Quarter Results Dashboard</h1>
         <div class="d-flex gap-2">
@@ -116,51 +116,57 @@
 
         <!-- Responsive Table -->
         <div class="stock-table-container">
-            <div class="stock-table-header d-none d-md-grid">
-                <div>RANK</div>
-                <div>SYMBOL</div>
-                <div>INDUSTRY</div>
-                <div class="text-end">SALES %</div>
-                <div class="text-end">PROFIT %</div>
-                <div class="text-end">OPM %</div>
-                <div class="text-center">SCORE</div>
-                <div class="text-center">RATING</div>
-            </div>
-
-            <div class="stock-list">
-                <div class="stock-row" *ngFor="let stock of filteredStocks(); let i = index">
-                    <!-- Mobile Label handled via CSS or simple stacking -->
-                    <div class="rank">{{ i + 1 }}</div>
-                    <div class="symbol">
-                        {{ stock.symbol }}
-                        <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" style="font-size: 1.2em;"></i>
-                    </div>
-                    <div class="industry text-truncate" title="{{stock.industry}}">{{ stock.industry }} ({{ stock.boardMeetingDate }})</div>
-                    <div class="metric text-end" [class.positive]="stock.salesGrowth > 0" [class.neutral]="stock.salesGrowth <= 0">
-                        <span class="d-md-none text-muted me-2">Sales:</span>{{ stock.salesGrowth }}%
-                    </div>
-                    <div class="metric text-end" [class.positive]="stock.profitGrowth > 0"
-                        [class.neutral]="stock.profitGrowth <= 0">
-                        <span class="d-md-none text-muted me-2">Profit:</span>{{ stock.profitGrowth }}%
-                    </div>
-                    <div class="metric text-end">
-                        <span class="d-md-none text-muted me-2">OPM:</span>{{ stock.opm }}%
-                    </div>
-                    <div class="text-center">
-                        <span class="d-md-none text-muted me-2">Score:</span>
-                        <span class="score-badge" [style.background]="getScoreColor(stock.ratingScore)">{{ stock.ratingScore }}/9</span>
-                    </div>
-                    <div class="text-center">
-                        <span class="rating-badge rating-{{ stock.rating | lowercase }}">{{ stock.rating }}</span>
-                    </div>
-                </div>
-
-                <!-- Empty State -->
-                <div class="empty-state" *ngIf="filteredStocks().length === 0">
-                    <i class="bi bi-bar-chart empty-icon"></i>
-                    <p>No stocks found matching these criteria.</p>
-                </div>
-            </div>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 14%;">SYMBOL</th>
+                        <th style="width: 14%;">Indicies</th>
+                        <th style="width: 24%;">INDUSTRY</th>
+                        <th style="width: 10%;" class="text-end">SALES %</th>
+                        <th style="width: 10%;" class="text-end">PROFIT %</th>
+                        <th style="width: 10%;" class="text-end">OPM %</th>
+                        <th style="width: 10%;" class="text-center">SCORE</th>
+                        <th style="width: 8%;" class="text-center">RATING</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let stock of filteredStocks(); let i = index">
+                        <td>
+                            {{ stock.symbol }}
+                            <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" style="font-size: 1.2em;"></i>
+                        </td>
+                        <td class="text-truncate" title="{{stock.indices}}">
+                            {{ stock.indices }}
+                        </td>
+                        <td class="text-truncate" title="{{stock.industry}}">
+                            {{ stock.industry }} ({{ stock.boardMeetingDate }})
+                        </td>
+                        <td class="text-end" [class.positive]="stock.salesGrowth > 0" [class.neutral]="stock.salesGrowth <= 0">
+                            {{ stock.salesGrowth }}
+                        </td>
+                        <td class="text-end" [class.positive]="stock.profitGrowth > 0" [class.neutral]="stock.profitGrowth <= 0">
+                            {{ stock.profitGrowth }}
+                        </td>
+                        <td class="text-end">
+                            {{ stock.opm }}
+                        </td>
+                        <td class="text-center">
+                            <span class="score-badge" [style.background]="getScoreColor(stock.ratingScore)">
+                                {{ stock.ratingScore }}/9
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="rating-badge rating-{{ stock.rating | lowercase }}">{{ stock.rating }}</span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="filteredStocks().length === 0">
+                        <td colspan="8" class="text-center py-5">
+                            <i class="bi bi-bar-chart empty-icon"></i>
+                            <p class="mb-0">No stocks found matching these criteria.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 

@@ -7,6 +7,7 @@ import { CommonService } from '@shared/services/common.service';
 import { BsDatepickerConfig, BsDatepickerModule, BsDatepickerViewMode } from 'ngx-bootstrap/datepicker';
 import { forkJoin } from 'rxjs';
 import { INDICES, RATING } from '@shared/constants';
+import { HelperModel } from '@shared/helper';
 
 @Component({
     selector: 'app-quarter-results',
@@ -21,7 +22,7 @@ export class QuarterResultsComponent {
     currentView = signal<'indices' | 'industry' | 'rating' | 'search' | null>(null);
     selectedFilterType = signal<string | null>(null);
     selectedFilterValue = signal<string | null>(null);
-    detailRatingFilter = signal<string>('ALL');
+    detailRatingFilter = signal<string>('RECENT');
     today = new Date();
     search: string = '';
 
@@ -46,11 +47,12 @@ export class QuarterResultsComponent {
     }
 
     ngOnInit() {
-        const formattedDate = moment(this.periodEnd).format('YYYY-MM-DD');
+        const formattedDate = HelperModel.getPreviousQuarter(new Date());
         forkJoin({
             quarterResults: this.quarterResultService.fetchQuarterResults(formattedDate)
         }).subscribe(({ quarterResults }) => {
             const stocks = this.commonService.getStocksList();
+            debugger
             this.currentView.set('indices');
         });
     }
@@ -62,7 +64,7 @@ export class QuarterResultsComponent {
     showDetail(type: string, value: string) {
         this.selectedFilterType.set(type);
         this.selectedFilterValue.set(value);
-        this.detailRatingFilter.set('ALL');
+        this.detailRatingFilter.set('RECENT');
     }
 
     goBack() {
@@ -205,7 +207,7 @@ export class QuarterResultsComponent {
     datePickConfig(): Partial<BsDatepickerConfig> {
         return {
             minMode: 'month' as BsDatepickerViewMode,
-            dateInputFormat: 'MMMM YYYY',
+            dateInputFormat: 'MMM YYYY',
             containerClass: 'theme-green',
             showWeekNumbers: false,
             adaptivePosition: true

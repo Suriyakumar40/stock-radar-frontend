@@ -65,11 +65,6 @@
  }
 
  /* Header */
- .page-header {
-     margin-bottom: 32px;
-     padding-bottom: 20px;
-     border-bottom: 1px solid var(--border);
- }
 
  /* Mobile Handling */
  @media (max-width: 1024px) {
@@ -79,14 +74,14 @@
  }
 
  .page-header {
-     margin-bottom: 32px;
-     padding-bottom: 16px;
-     border-bottom: 1px solid var(--border);
+     margin-bottom: 15px;
+    //  padding-bottom: 16px;
+    //  border-bottom: 1px solid var(--border);
  }
 
  .page-title {
      font-family: 'Space Mono', monospace;
-     font-size: 24px;
+     font-size: 21px;
      font-weight: 700;
      margin-bottom: 8px;
      background: linear-gradient(135deg, var(--explosive), #00ccff);
@@ -122,6 +117,13 @@
      visibility: visible;
  }
 
+ thead {
+    font-size: 15px;
+ }
+
+ tbody {
+    font-size: 14px;
+ }
 
 
  /* Hide overlay on very wide screens where sidebar is always visible */

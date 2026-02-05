@@ -31,8 +31,8 @@
 
     <!-- Filter Tabs -->
     <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="currentFilter() === 'all'" (click)="setFilter('all')">All
-            Stocks</button>
+        <button class="filter-tab" [class.active]="currentFilter() === 'all'" (click)="setFilter('all')"> RECENT
+        </button>
         <button class="filter-tab" [class.active]="currentFilter() === 'both-up'" (click)="setFilter('both-up')">🧠 Both
             FII & DII ↑</button>
         <button class="filter-tab" [class.active]="currentFilter() === 'fii-up'" (click)="setFilter('fii-up')">FII
@@ -47,58 +47,63 @@
             Decreasing</button>
     </div>
     <!-- Stock Table -->
-    <div class="stock-table">
-        <div class="table-header" style="position: sticky; top: 0; background: #fff; z-index: 2;">
-            <div>RANK</div>
-            <div>SYMBOL</div>
-            <div>INDUSTRY</div>
-            <div class="text-center">PROMOTER %</div>
-            <div class="text-center">FII %</div>
-            <div class="text-center">DII %</div>
-            <div class="text-center">PUBLIC %</div>
-            <div class="text-center">PROMO Δ</div>
-            <div class="text-center">FII Δ</div>
-            <div class="text-center">DII Δ</div>
-        </div>
-
-        <div class="table-body" style="height: 600px; overflow-y: auto;">
-            <div class="table-row" *ngFor="let stock of filteredShareholdings(); let i = index">
-                <div class="rank">#{{ i + 1 }}</div>
-                <div class="symbol">
-                    {{ stock.symbol }}
-                <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock"
-                        style="font-size: 1.2em;"></i>
-                </div>
-                <div class="industry" title="{{stock.industry}}">{{ stock.industry }} ({{ stock.latestDate }})</div>
-                <div class="metric-value">{{ stock.promoter }}%</div>
-                <div class="metric-value">{{ stock.fii }}%</div>
-                <div class="metric-value">{{ stock.dii }}%</div>
-                <div class="metric-value">{{ stock.public }}%</div>
-
-                <div class="metric-value" [ngClass]="getChangeClass(stock.promoterDiff)">
-                    <i class="bi"
-                        [ngClass]="{'text-danger bi-arrow-down': stock.promoterDiff < 0, 'text-success bi-arrow-up': stock.promoterDiff > 0}"></i>
-                    {{ stock.promoterDiff | number:'1.2-2' }}
-                </div>
-
-                <div class="metric-value" [ngClass]="getChangeClass(stock.fiiDiff)">
-                    <i class="bi"
-                        [ngClass]="{'text-danger bi-arrow-down': stock.fiiDiff < 0, 'text-success bi-arrow-up': stock.fiiDiff > 0}"></i>
-                    {{ stock.fiiDiff | number:'1.2-2' }}
-                </div>
-
-                <div class="metric-value" [ngClass]="getChangeClass(stock.diiDiff)">
-                    <i class="bi"
-                        [ngClass]="{'text-danger bi-arrow-down': stock.diiDiff < 0, 'text-success bi-arrow-up': stock.diiDiff > 0}"></i>
-                    {{ stock.diiDiff | number:'1.2-2' }}
-                </div>
-            </div>
-
+    <table class="table table-hover align-middle">
+        <thead class="table-light" style="position: sticky; top: 0; background: #fff; z-index: 2;">
+            <tr>
+                <!-- <th style="width: 6%;">RANK</th> -->
+                <th style="width: 12%;">SYMBOL</th>
+                <th style="width: 20%;">INDUSTRY</th>
+                <th style="width: 10%;">INDICIES</th>
+                <th class="text-center" style="width: 18%;">PROMO Δ</th>
+                <th class="text-center" style="width: 18%;">FII Δ</th>
+                <th class="text-center" style="width: 18%;">DII Δ</th>
+                <th class="text-center" style="width: 15%;">PUBLIC</th>
+            </tr>
+        </thead>
+        <tbody style="height: 600px; overflow-y: auto;">
+            <ng-container *ngFor="let stock of filteredShareholdings(); let i = index">
+                <tr>
+                    <!-- <td class="rank">#{{ i + 1 }}</td> -->
+                    <td class="symbol">
+                        {{ stock.symbol }}
+                        <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock"
+                            style="font-size: 1.2em;"></i>
+                    </td>
+                    <td class="small">
+                        {{ stock.index }}
+                    </td>
+                    <td class="industry" title="{{stock.industry}}">
+                        {{ stock.industry }}
+                        ({{ stock.submissionDate ? stock.submissionDate : (stock.periodEnd ? stock.periodEnd : '') }})
+                    </td>
+                    <td class="metric-value text-center" [ngClass]="getChangeClass(stock.promoterDiff)">
+                        <span class="{{stock.promoterDiff > 0 ? 'text-success fs-6' : 'text-danger fs-6'}}">
+                            {{ stock.promoterDiff | number:'1.2-2' }}
+                        </span>
+                        <span> ({{ stock.promoter}}%) </span>
+                    </td>
+                    <td class="metric-value text-center" [ngClass]="getChangeClass(stock.fiiDiff)">
+                        <span class="{{stock.fiiDiff > 0 ? 'text-success fs-6' : 'text-danger fs-6'}}">
+                            {{ stock.fiiDiff | number:'1.2-2' }}
+                        </span>
+                        <span> ({{ stock.fii}}%) </span>
+                    </td>
+                    <td class="metric-value text-center" [ngClass]="getChangeClass(stock.diiDiff)">
+                        <span class="{{stock.diiDiff > 0 ? 'text-success fs-6' : 'text-danger fs-6'}}">
+                            {{ stock.diiDiff | number:'1.2-2' }}
+                        </span>
+                        <span> ({{ stock.dii}}%) </span>
+                    </td>
+                    <td class="metric-value text-center">{{ stock.public }}%</td>
+                </tr>
+            </ng-container>
             <!-- Empty State -->
-            <div class="empty-state" *ngIf="filteredShareholdings().length === 0">
-                <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
-                <div>No stocks match your filters</div>
-            </div>
-        </div>
-    </div>
+            <tr *ngIf="filteredShareholdings().length === 0" style="display: table; width: 100%;">
+                <td colspan="7" class="text-center">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div>No stocks match your filters</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </main>

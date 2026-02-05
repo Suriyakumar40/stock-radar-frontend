@@ -9,6 +9,7 @@ export class HelperModel {
         return moment(new Date(date)).startOf('month').format('YYYY-MM-DD');
     }
 
+
     static getPreviousQuarter(date: string | Date): string {
         return moment(new Date(date))
             .subtract(1, 'quarter')
@@ -21,6 +22,12 @@ export class HelperModel {
         const end = m.format('YYYY-MM-DD');
         const start = m.clone().subtract(6, 'months').startOf('day').format('YYYY-MM-DD');
         return { start, end };
+    }
+
+    static getLastNDays(date: string | Date, days: number): string {
+        const m = moment(new Date(date)); 
+        const start = m.clone().subtract(days, 'days').startOf('day').format('YYYY-MM-DD');
+        return start;
     }
 
     static getQuarterDateRange(date: string | Date): { start: string; end: string } {

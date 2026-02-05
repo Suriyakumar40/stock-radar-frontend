@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import moment from 'moment';
 import { ShareholdingService } from '../services/shareholding.service';
-import { CommonService } from '../../../shared';
+import { CommonService } from '@shared/services/common.service';
 import { BsDatepickerConfig, BsDatepickerModule, BsDatepickerViewMode } from 'ngx-bootstrap/datepicker';
 import { forkJoin } from 'rxjs';
 import { HelperModel } from '@shared/helper';
@@ -94,10 +94,9 @@ export class ShareholdingComponent {
                     // Sort by combined total increase
                     return (b.fiiDiff + b.diiDiff) - (a.fiiDiff + a.diiDiff);
                 default:
-                    // Default: Sort by total activity (Absolute Change)
-                    const changeA = Math.abs(a.fiiDiff) + Math.abs(a.diiDiff);
-                    const changeB = Math.abs(b.fiiDiff) + Math.abs(b.diiDiff);
-                    return changeB - changeA;
+                    // Default: Sort by submissionDate (desc), fallback to periodEnd (desc)
+                    const getDate = (item: any) => item.submissionDate ? new Date(item.submissionDate) : new Date(item.periodEnd);
+                    return getDate(b).getTime() - getDate(a).getTime();
             }
         });
     });

@@ -35,7 +35,6 @@ export class ShareholdingService {
         return this.http.get<{ message: string; data: IShareholding[] }>(url).pipe(
             map(res => {
                 const result = ShareholdingModel.mapDbToShareholdings(res.data);
-                debugger
                 this.shareholdings.set(result);
                 return result;
             }),

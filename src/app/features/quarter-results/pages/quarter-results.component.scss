@@ -335,10 +335,14 @@
 
  .positive {
      color: var(--explosive);
+     font-size: 17px;
+     font-weight: bold;
  }
 
  .neutral {
-     color: var(--text-secondary);
+     color: red;
+     font-size: 16px;
+     font-weight: bold;
  }
 
  .score-badge {
@@ -447,5 +451,5 @@
  }
 
  .light-secondary-border {
-    border: 1px solid #dedede;
+     border: 1px solid #dedede;
  }

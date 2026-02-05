@@ -4,7 +4,7 @@ export interface IShareholding {
     symbol: string;
     industry: string;
     index: string;
-    latestDate: string;
+    periodEnd: string;
     previousDate: string;
     promoter: number;
     fii: number;
@@ -56,7 +56,7 @@ export class ShareholdingModel {
                 industry: stock && stock.industry ? stock.industry : '',
                 index:  stock && stock.indices ? stock.indices : '',
                 isFno: stock?.isFno ?? false,
-                latestDate: HelperModel.apiToUiDateFormat(latest.periodEnd),
+                periodEnd: HelperModel.apiToUiDateFormat(latest.periodEnd),
                 previousDate: HelperModel.apiToUiDateFormat(previous.periodEnd),
                 submissionDate: HelperModel.apiToUiDateFormat(latest.submissionDate),
                 promoter: parseFloat(latest.promotor ?? '0'),
