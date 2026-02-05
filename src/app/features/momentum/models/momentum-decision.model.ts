@@ -59,7 +59,7 @@ export class MomentumDecisionModel {
                 symbol: item.stock?.symbol ?? '',
                 industry: item.stock?.industry ?? '',
                 indices: item.stock?.indices ?? '',
-                isFno: item.stock?.is_fno ?? false,
+                isFno: item.stock?.isFno ?? false,
                 current_price: parseFloat(item.current_price),
                 target_price: parseFloat(item.target_price),
                 stop_loss: parseFloat(item.stop_loss),

@@ -90,25 +90,33 @@
                     <th width="10%">Symbol</th>
                     <th width="10%">Indices</th>
                     <th width="10%">Industry</th>
-                    <th width="10%">Connfidence</th>
-                    <th width="10%">Price</th>
-                    <th width="10%">Target</th>
+                    <th width="5%">Confidence</th>
+                    <th width="5%">Price</th>
+                    <th width="5%">Target</th>
+                    <th width="5%">52 W</th>
+                    <th width="5%">Volume</th>
+                    <th width="5%">Delivery</th>
                 </tr>
             </thead>
             <tbody>
                 @for (stock of filteredData(); track stock.symbol; let i = $index) {
                 <tr (click)="showDetailPanel(stock)">
-                    <td class="fw-medium"> {{ stock.symbol }} </td>
-                    <td> {{ stock.indices }} </td>
-                    <td> {{ stock.industry }} </td>
+                    <td>
+                         <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" ></i> 
+                        {{ stock.symbol }} </td>
+                    <td class="small text-muted"> {{ stock.indices }} </td>
+                    <td class="small text-muted"> {{ stock.industry }} </td>
                     <td>
                         <span class="text-success fw-bold fs-6">
                             {{ stock.confidence }}
                         </span>
-                        <span class="small text-muted"> ({{ stock.total_score | number:'1.1-1' }}) </span>
+                        <span class="text-muted"> ({{ stock.total_score | number:'1.1-1' }}) </span>
                     </td>
                     <td>₹{{ stock.current_price | number:'1.0-0' }}</td>
                     <td>₹{{ stock.target_price | number:'1.0-0' }}</td>
+                    <td>{{ stock.dist_from_52w }}%</td>
+                    <td>{{ stock.volume_trend_60d }}%</td>
+                    <td>{{ stock.delivery_avg_10d }}%</td>
                 </tr>
                 }
             </tbody>
