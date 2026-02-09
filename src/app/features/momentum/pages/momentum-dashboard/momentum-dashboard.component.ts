@@ -5,7 +5,7 @@ import { MomentumService } from '../../services/momentum.service';
 import { signal, computed } from '@angular/core';
 import { StockPriceService } from '@shared/services/stock-price.service';
 import { QuarterResultService } from '@feature/quarter-results/services/quarter-result.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { HelperModel } from '@shared/helper';
 import { CommonService } from '@shared/services/common.service';
@@ -44,6 +44,7 @@ export class MomentumDashboardComponent implements OnInit {
 
     // Use inject() to properly resolve the service without constructor reflection issues
     private momentumService = inject(MomentumService);
+    private stockPriceService = inject(StockPriceService);
     private commonService = inject(CommonService);
 
     constructor() {
@@ -65,10 +66,22 @@ export class MomentumDashboardComponent implements OnInit {
 
     ngOnInit(): void {
         this.isLoading.set(true);
-        const dbEndDate = HelperModel.uiToApiDateFormat(this.selectedDate);
-        forkJoin({
-            momentumData: this.momentumService.getMomentumDecisionsByDate(dbEndDate)
-        }).subscribe(({ momentumData }) => {
+        this.stockPriceService.getMaxTradeDate().pipe(
+            switchMap((maxDate: string) => {
+                if (maxDate) {
+                    this.selectedDate = new Date(maxDate);
+                    const dbEndDate = HelperModel.uiToApiDateFormat(this.selectedDate);
+                    return forkJoin({
+                        momentumData: this.momentumService.getMomentumDecisionsByDate(dbEndDate)
+                    });
+                } else {
+                    // Always return an Observable, even if maxDate is falsy
+                    return forkJoin({
+                        momentumData: []
+                    });
+                }
+            })
+        ).subscribe(({ momentumData }) => {
             const stocks = this.commonService.getStocksList();
             this.allData.set(momentumData);
             this.filterByAction('STRONG BUY');
@@ -76,7 +89,20 @@ export class MomentumDashboardComponent implements OnInit {
         });
     }
 
-    onDateChange(event: Date | undefined): void {
+    onDateChange(event: Date) {
+        if (event) {
+            this.isLoading.set(true);
+            const dbEndDate = HelperModel.uiToApiDateFormat(event);
+            forkJoin({
+                momentumData: this.momentumService.getMomentumDecisionsByDate(dbEndDate)
+            }).subscribe(({ momentumData }) => {
+                const stocks = this.commonService.getStocksList();
+                this.allData.set(momentumData);
+                this.filterByAction('STRONG BUY');
+                this.isLoading.set(false);
+            });
+        }
+
     }
 
     // --- Filtering Logic ---

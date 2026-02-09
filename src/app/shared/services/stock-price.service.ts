@@ -34,6 +34,17 @@ export class StockPriceService {
         );
     }
 
+    getMaxTradeDate(): Observable<string> {
+        const url = `${this.stockPriceServiceUrl}/max-trade-date`;
+        return this.http.get(url).pipe(
+            map((result: any) => result?.data ?? ''),
+            catchError(error => {
+                console.error('Error fetching max trade date:', error);
+                return of('');
+            })
+        );
+    }
+
     getAllStockPriceSummaries(): Observable<any> {
         const url = `${this.stockPriceSummariesUrl}/get-all-stock-price-summary`;
         return this.http.get(url).pipe(

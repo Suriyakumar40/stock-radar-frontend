@@ -18,60 +18,47 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="count-card" (click)="filterByAction('STRONG BUY')"
-                ngClass="{{ selectedTab() === 'STRONG BUY' ? 'selected-strong-buy' : '' }}">
-                <div class="count-label">
-                    Strong Buy
-                </div>
+    <div class="d-flex gap-3 mb-4 flex-wrap">
+        <div class="flex-fill" style="min-width:180px;">
+            <div class="count-card h-100 d-flex flex-column justify-content-between align-items-center"
+                (click)="filterByAction('STRONG BUY')"
+                [ngClass]="selectedTab() === 'STRONG BUY' ? 'selected-strong-buy' : ''">
+                <div class="count-label">Strong Buy</div>
                 <div class="count-value text-success">{{ countStrongBuy() }}</div>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="count-card" (click)="filterByAction('BUY')"
-                ngClass="{{ selectedTab() === 'BUY' ? 'selected-buy' : '' }}">
-                <div class="count-label">
-                    Buy
-                </div>
+        <div class="flex-fill" style="min-width:180px;">
+            <div class="count-card h-100 d-flex flex-column justify-content-between align-items-center"
+                (click)="filterByAction('BUY')" [ngClass]="selectedTab() === 'BUY' ? 'selected-buy' : ''">
+                <div class="count-label">Buy</div>
                 <div class="count-value text-primary">{{ countBuy() }}</div>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="count-card" (click)="filterByAction('ACCUMULATE')"
-                ngClass="{{ selectedTab() === 'ACCUMULATE' ? 'selected-accumulate' : '' }}">
-                <div class="count-label">
-                    Accumulate
-                </div>
+        <div class="flex-fill" style="min-width:180px;">
+            <div class="count-card h-100 d-flex flex-column justify-content-between align-items-center"
+                (click)="filterByAction('ACCUMULATE')"
+                [ngClass]="selectedTab() === 'ACCUMULATE' ? 'selected-accumulate' : ''">
+                <div class="count-label">Accumulate</div>
                 <div class="count-value text-warning">{{ countAccumulate() }}</div>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="count-card" (click)="filterByAction('HOLD')"
-                ngClass="{{ selectedTab() === 'HOLD' ? 'selected-hold' : '' }}">
-                <div class="count-label">
-                    Hold Pattern
-                </div>
+        <div class="flex-fill" style="min-width:180px;">
+            <div class="count-card h-100 d-flex flex-column justify-content-between align-items-center"
+                (click)="filterByAction('HOLD')" [ngClass]="selectedTab() === 'HOLD' ? 'selected-hold' : ''">
+                <div class="count-label">Hold Pattern</div>
                 <div class="count-value text-hold">{{ countHold() }}</div>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="count-card" (click)="filterByAction('AVOID')"
-                ngClass="{{ selectedTab() === 'AVOID' ? 'selected-avoid' : '' }}">
-                <div class="count-label">
-                    Avoid Pattern
-                </div>
+        <div class="flex-fill" style="min-width:180px;">
+            <div class="count-card h-100 d-flex flex-column justify-content-between align-items-center"
+                (click)="filterByAction('AVOID')" [ngClass]="selectedTab() === 'AVOID' ? 'selected-avoid' : ''">
+                <div class="count-label">Avoid Pattern</div>
                 <div class="count-value text-danger">{{ countAvoid() }}</div>
             </div>
         </div>
     </div>
 
-
-    <div id="tableContainer">
+    <div class="table-container" style="height: 600px; overflow-y: auto;">
         @if (isLoading()) {
         <div class="loading">
             <div class="spinner-border text-primary" role="status">
@@ -102,8 +89,9 @@
                 @for (stock of filteredData(); track stock.symbol; let i = $index) {
                 <tr (click)="showDetailPanel(stock)">
                     <td>
-                         <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock" ></i> 
-                        {{ stock.symbol }} </td>
+                        <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock"></i>
+                        {{ stock.symbol }}
+                    </td>
                     <td class="small text-muted"> {{ stock.indices }} </td>
                     <td class="small text-muted"> {{ stock.industry }} </td>
                     <td>
@@ -112,8 +100,9 @@
                         </span>
                         <span class="text-muted"> ({{ stock.total_score | number:'1.1-1' }}) </span>
                     </td>
-                    <td>₹{{ stock.current_price | number:'1.0-0' }}</td>
-                    <td>₹{{ stock.target_price | number:'1.0-0' }}</td>
+                    <td>{{ stock.current_price | number:'1.0-0' }}</td>
+                    <td>{{ stock.target_price | number:'1.0-0' }} <span class="text-muted small">
+                            ({{stock.expected_days}} D) </span></td>
                     <td>{{ stock.dist_from_52w }}%</td>
                     <td>{{ stock.volume_trend_60d }}%</td>
                     <td>{{ stock.delivery_avg_10d }}%</td>
