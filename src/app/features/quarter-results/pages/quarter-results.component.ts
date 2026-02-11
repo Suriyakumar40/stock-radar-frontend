@@ -52,7 +52,6 @@ export class QuarterResultsComponent {
             quarterResults: this.quarterResultService.fetchQuarterResults(formattedDate)
         }).subscribe(({ quarterResults }) => {
             const stocks = this.commonService.getStocksList();
-            debugger
             this.currentView.set('indices');
         });
     }

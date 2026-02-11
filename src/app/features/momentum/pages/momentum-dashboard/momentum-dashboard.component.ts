@@ -1,4 +1,4 @@
-import { Component, OnInit, Signal, WritableSignal, inject } from '@angular/core';
+import { Component, OnInit, Signal, WritableSignal, inject, TemplateRef, RendererFactory2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MomentumService } from '../../services/momentum.service';
@@ -7,17 +7,20 @@ import { StockPriceService } from '@shared/services/stock-price.service';
 import { QuarterResultService } from '@feature/quarter-results/services/quarter-result.service';
 import { forkJoin, switchMap } from 'rxjs';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { BsModalService, BsModalRef, ModalModule } from 'ngx-bootstrap/modal';
 import { HelperModel } from '@shared/helper';
 import { CommonService } from '@shared/services/common.service';
 import { IMomentumDecision } from '@feature/momentum/models/momentum-decision.model';
+import { HighchartsChartComponent } from 'highcharts-angular';
+import * as Highcharts from 'highcharts';
 
 @Component({
     selector: 'app-momentum-dashboard',
     standalone: true,
     templateUrl: './momentum-dashboard.component.html',
     styleUrls: ['./momentum-dashboard.component.scss'],
-    imports: [CommonModule, FormsModule, BsDatepickerModule],
-    providers: [MomentumService, QuarterResultService]
+    imports: [CommonModule, FormsModule, BsDatepickerModule, ModalModule, HighchartsChartComponent],
+    providers: [MomentumService, QuarterResultService, BsModalService]
 })
 export class MomentumDashboardComponent implements OnInit {
 
@@ -30,6 +33,16 @@ export class MomentumDashboardComponent implements OnInit {
     isPanelOpen: WritableSignal<boolean> = signal(false);
     isLoading: WritableSignal<boolean> = signal(true);
     listTitle: WritableSignal<string> = signal('All Signals');
+    selectedStockForHistory: WritableSignal<IMomentumDecision | null> = signal(null);
+    selectedHistoryTab: WritableSignal<string> = signal('score');
+
+    // Highcharts
+    Highcharts: typeof Highcharts = Highcharts;
+    scoreChartOptions: Highcharts.Options = {};
+    volumeChartOptions: Highcharts.Options = {};
+    updateFlag: boolean = false;
+
+    modalRef?: BsModalRef;
 
     selectedDate: Date = new Date();
     maxDate: Date = new Date();
@@ -46,17 +59,12 @@ export class MomentumDashboardComponent implements OnInit {
     private momentumService = inject(MomentumService);
     private stockPriceService = inject(StockPriceService);
     private commonService = inject(CommonService);
+    private modalService = inject(BsModalService);
 
     constructor() {
         // Set selectedDate based on local time: if after 18:30, use today; else, use previous date
         const now = new Date();
-        if (now.getHours() > 18 || (now.getHours() === 18 && now.getMinutes() >= 30)) {
-            this.selectedDate = new Date();
-        } else {
-            const prev = new Date();
-            prev.setDate(prev.getDate() - 1);
-            this.selectedDate = prev;
-        }
+        this.selectedDate = now; // Default to today
         this.bsConfig = {
             containerClass: 'theme-green',
             dateInputFormat: 'DD-MMM-YYYY',
@@ -169,6 +177,244 @@ export class MomentumDashboardComponent implements OnInit {
         this.isPanelOpen.set(true);
     }
 
+    openHistoryModal(template: TemplateRef<any>, stock: IMomentumDecision) {
+        this.selectedStockForHistory.set(stock);
+        this.initializeCharts(stock);
+        this.modalRef = this.modalService.show(template, {
+            class: 'modal-xlg',
+            backdrop: 'static',
+            keyboard: true
+        });
+    }
+
+    closeHistoryModal() {
+        this.modalRef?.hide();
+        this.selectedStockForHistory.set(null);
+    }
+
+    initializeCharts(stock: IMomentumDecision) {
+        // Generate mock historical data (replace with actual API call)
+        const historicalData = this.generateMockHistoricalData(stock);
+
+        // Score vs Confidence Chart
+        this.scoreChartOptions = {
+            chart: {
+                type: 'line',
+                height: 700
+            },
+            title: {
+                text: `${stock.symbol} - Score & Confidence Trend`,
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: historicalData.dates,
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: [{
+                title: {
+                    text: 'Score',
+                    style: { color: '#0d6efd' }
+                },
+                min: 0,
+                max: 10,
+                tickPositions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                gridLineWidth: 1
+            }, {
+                title: {
+                    text: 'Confidence (%)',
+                    style: { color: '#198754' }
+                },
+                opposite: true,
+                min: 0,
+                max: 100,
+                tickPositions: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                gridLineWidth: 0
+            }],
+            series: [{
+                name: 'Score',
+                type: 'line',
+                data: historicalData.scores,
+                color: '#0d6efd',
+                marker: {
+                    enabled: true,
+                    radius: 4
+                },
+                yAxis: 0
+            }, {
+                name: 'Confidence',
+                type: 'line',
+                data: historicalData.confidence,
+                color: '#198754',
+                marker: {
+                    enabled: true,
+                    radius: 4
+                },
+                yAxis: 1
+            }],
+            tooltip: {
+                shared: true
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                align: 'center',
+                verticalAlign: 'bottom'
+            }
+        };
+
+        // Volume & Delivery Trend Chart
+        this.volumeChartOptions = {
+            chart: {
+                type: 'column',
+                height: 700
+            },
+            title: {
+                text: `${stock.symbol} - Volume & Delivery Trend`,
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: historicalData.dates,
+                title: {
+                    text: 'Date'
+                },
+                labels: {
+                    rotation: -45,
+                    style: {
+                        fontSize: '11px'
+                    }
+                }
+            },
+            yAxis: [{
+                title: {
+                    text: 'Percentage (%)',
+                    style: { color: '#333' }
+                },
+                min: 0,
+                max: 200,
+                tickPositions: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
+                labels: {
+                    format: '{value}%'
+                }
+            }],
+            series: [{
+                name: 'Volume Trend',
+                type: 'column',
+                data: historicalData.volumeTrend,
+                color: '#fd7e14',
+                dataLabels: {
+                    enabled: true,
+                    rotation: -90,
+                    color: '#FFFFFF',
+                    align: 'right',
+                    format: '{point.y:.1f}%',
+                    y: 10,
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                    }
+                }
+            }, {
+                name: 'Delivery %',
+                type: 'column',
+                data: historicalData.delivery,
+                color: '#6f42c1',
+                dataLabels: {
+                    enabled: true,
+                    rotation: -90,
+                    color: '#FFFFFF',
+                    align: 'right',
+                    format: '{point.y:.1f}%',
+                    y: 10,
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                    }
+                }
+            }],
+            tooltip: {
+                shared: true,
+                valueSuffix: '%'
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                align: 'center',
+                verticalAlign: 'bottom'
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            }
+        };
+
+        this.updateFlag = true;
+    }
+
+    generateMockHistoricalData(stock: IMomentumDecision) {
+        // Generate 10 days of mock historical data
+        const dates: string[] = [];
+        const scores: number[] = [];
+        const confidence: number[] = [];
+        const volumeTrend: number[] = [];
+        const delivery: number[] = [];
+
+        const today = new Date();
+        const baseScore = stock.total_score;
+        const baseDelivery = stock.delivery_avg_10d;
+        const baseVolume = stock.volume_trend_60d;
+
+        for (let i = 9; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            dates.push(date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+
+            // Generate realistic variations
+            const scoreVariation = (Math.random() - 0.5) * 2;
+            scores.push(parseFloat((baseScore + scoreVariation).toFixed(1)));
+
+            // Confidence based on score (scaled to percentage)
+            const confidenceValue = (baseScore + scoreVariation) * 10;
+            confidence.push(parseFloat(confidenceValue.toFixed(1)));
+
+            // Volume trend variations
+            const volumeVariation = (Math.random() - 0.5) * 20;
+            volumeTrend.push(parseFloat((baseVolume + volumeVariation).toFixed(1)));
+
+            // Delivery variations
+            const deliveryVariation = (Math.random() - 0.5) * 10;
+            delivery.push(parseFloat((baseDelivery + deliveryVariation).toFixed(1)));
+        }
+
+        return { dates, scores, confidence, volumeTrend, delivery };
+    }
+
+    // Listen for ESC key to close the detail panel
+    ngAfterViewInit(): void {
+        window.addEventListener('keydown', this.handleEscKey);
+    }
+
+    ngOnDestroy(): void {
+        window.removeEventListener('keydown', this.handleEscKey);
+    }
+
+    private handleEscKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.isPanelOpen()) {
+            this.closeDetailPanel();
+        }
+    }
+    
     closeDetailPanel() {
         this.isPanelOpen.set(false);
     }
@@ -177,13 +423,13 @@ export class MomentumDashboardComponent implements OnInit {
 
     getInsightTitle(stock: IMomentumDecision): string {
         if (stock.delivery_vs_price_pattern === 'ACCUMULATION') {
-            return '🔥 Accumulation Pattern Detected';
+            return 'Accumulation Pattern Detected';
         } else if (stock.total_score >= 8.0) {
-            return '⭐ Strong Buy Signal';
+            return 'Strong Buy Signal';
         } else if (stock.total_score >= 6.0) {
-            return '📈 Buy Signal';
+            return 'Buy Signal';
         } else {
-            return '⏳ Accumulate Signal';
+            return 'Accumulate Signal';
         }
     }
 

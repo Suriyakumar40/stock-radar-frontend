@@ -83,12 +83,13 @@
                     <th width="5%">52 W</th>
                     <th width="5%">Volume</th>
                     <th width="5%">Delivery</th>
+                    <th width="5%">History</th>
                 </tr>
             </thead>
             <tbody>
                 @for (stock of filteredData(); track stock.symbol; let i = $index) {
-                <tr (click)="showDetailPanel(stock)">
-                    <td>
+                <tr>
+                    <td (click)="showDetailPanel(stock)" style="color: blue;">
                         <i *ngIf="stock.isFno" class="bi bi-lightning-fill text-warning" title="F&O Stock"></i>
                         {{ stock.symbol }}
                     </td>
@@ -106,6 +107,11 @@
                     <td>{{ stock.dist_from_52w }}%</td>
                     <td>{{ stock.volume_trend_60d }}%</td>
                     <td>{{ stock.delivery_avg_10d }}%</td>
+                    <td>
+                        <button class="btn btn-light btn-sm border-1" (click)="openHistoryModal(historyModal, stock)">
+                            <i class="bi bi-clock-history"></i> History
+                        </button>
+                    </td>
                 </tr>
                 }
             </tbody>
@@ -230,7 +236,6 @@
                 </span>
             </div>
         </div>
-
         <div class="detail-section">
             <div class="detail-section-title">
                 <i class="bi bi-lightbulb"></i> Investment Insight
@@ -243,3 +248,76 @@
     </div>
     }
 </div>
+
+<!-- History Modal Template -->
+<ng-template #historyModal>
+    <div class="modal-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="modal-title">
+            <i class="bi bi-clock-history me-2"></i>
+            Momentum History - {{ selectedStockForHistory()?.symbol }}
+        </h5>
+        <button type="button" class="btn btn-md btn-secondary" (click)="closeHistoryModal()">Close</button>
+    </div>
+    <div class="modal-body p-0" style="height: calc(100vh - 120px);">
+        <div class="d-flex h-100">
+            <!-- Vertical Tabs -->
+            <div class="vertical-tabs bg-light border-end">
+                <div class="vertical-tab-item" 
+                     [class.active]="selectedHistoryTab() === 'score'"
+                     (click)="selectedHistoryTab.set('score')">
+                    <i class="bi bi-graph-up me-2"></i>
+                    <span>Score vs Confidence</span>
+                </div>
+                <div class="vertical-tab-item" 
+                     [class.active]="selectedHistoryTab() === 'volume'"
+                     (click)="selectedHistoryTab.set('volume')">
+                    <i class="bi bi-bar-chart-line me-2"></i>
+                    <span>Volume & Delivery Trend</span>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="flex-fill p-4" style="overflow-y: auto;">
+                @if (selectedHistoryTab() === 'score') {
+                <div class="tab-content-section">
+                    <h5 class="mb-4">Score vs Confidence Analysis</h5>
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <p class="text-muted mb-4">
+                               
+                            </p>
+                            <highcharts-chart
+                                [options]="scoreChartOptions"
+                                [update]="updateFlag"
+                                style="width: 100%; display: block;">
+                            </highcharts-chart>
+                        </div>
+                    </div>
+                </div>
+                }
+                
+                @if (selectedHistoryTab() === 'volume') {
+                <div class="tab-content-section">
+                    <h5 class="mb-4">Volume & Delivery Trend Analysis</h5>
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <p class="text-muted mb-4">
+                            </p>
+                            <highcharts-chart
+                                [options]="volumeChartOptions"
+                                [update]="updateFlag"
+                                style="width: 100%; display: block;">
+                            </highcharts-chart>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeHistoryModal()">
+            <i class="bi bi-x-circle me-2"></i>Close
+        </button>
+    </div>
+</ng-template>
