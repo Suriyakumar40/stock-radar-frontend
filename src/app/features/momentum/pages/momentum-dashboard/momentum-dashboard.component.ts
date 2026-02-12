@@ -8,6 +8,7 @@ import { QuarterResultService } from '@feature/quarter-results/services/quarter-
 import { forkJoin, switchMap } from 'rxjs';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { BsModalService, BsModalRef, ModalModule } from 'ngx-bootstrap/modal';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { HelperModel } from '@shared/helper';
 import { CommonService } from '@shared/services/common.service';
 import { IMomentumDecision } from '@feature/momentum/models/momentum-decision.model';
@@ -20,7 +21,7 @@ import moment from 'moment';
     standalone: true,
     templateUrl: './momentum-dashboard.component.html',
     styleUrls: ['./momentum-dashboard.component.scss'],
-    imports: [CommonModule, FormsModule, BsDatepickerModule, ModalModule, HighchartsChartComponent],
+    imports: [CommonModule, FormsModule, BsDatepickerModule, ModalModule, HighchartsChartComponent, TypeaheadModule],
     providers: [MomentumService, QuarterResultService, BsModalService]
 })
 export class MomentumDashboardComponent implements OnInit {
@@ -48,6 +49,10 @@ export class MomentumDashboardComponent implements OnInit {
     selectedDate: Date = new Date();
     maxDate: Date = new Date();
     bsConfig: Partial<BsDatepickerConfig>;
+
+    // Typeahead for stock search
+    searchSymbol: string = '';
+    stockSymbols: string[] = [];
 
     // Computed signals for counts
     countStrongBuy: Signal<number> = computed(() => this.allData().filter(s => s.rating === 'STRONG BUY').length);
@@ -95,6 +100,9 @@ export class MomentumDashboardComponent implements OnInit {
             this.allData.set(momentumData);
             this.filterByAction('STRONG BUY');
             this.isLoading.set(false);
+            
+            // Populate stock symbols for typeahead
+            this.stockSymbols = momentumData.map(stock => stock.symbol).sort();
         });
     }
 
@@ -109,6 +117,9 @@ export class MomentumDashboardComponent implements OnInit {
                 this.allData.set(momentumData);
                 this.filterByAction('STRONG BUY');
                 this.isLoading.set(false);
+                
+                // Update stock symbols for typeahead
+                this.stockSymbols = momentumData.map(stock => stock.symbol).sort();
             });
         }
 
@@ -147,6 +158,25 @@ export class MomentumDashboardComponent implements OnInit {
     resetFilters() {
         this.filteredData.set(this.allData());
         this.listTitle.set('All Signals');
+        this.searchSymbol = '';
+    }
+
+    // Search by stock symbol
+    onStockSelect(event: any) {
+        const symbol = event.item || event;
+        if (symbol) {
+            const stock = this.allData().find(s => s.symbol === symbol);
+            if (stock) {
+                this.filteredData.set([stock]);
+                this.listTitle.set(`Search Result: ${symbol}`);
+            }
+        }
+    }
+
+    onSearchChange(event: string) {
+        if (!event || event.trim() === '') {
+            this.resetFilters();
+        }
     }
 
     // --- UI Helpers ---

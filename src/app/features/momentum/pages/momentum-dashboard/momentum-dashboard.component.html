@@ -6,14 +6,31 @@
                     <i class="bi bi-graph-up-arrow"></i> Momentum Stocks Dashboard
                 </h1>
             </div>
-            <div class="text-end">
-                <input type="text" placeholder="Select Date" class="form-control d-inline-block w-auto" bsDatepicker
-                    #dp="bsDatepicker" [bsConfig]="bsConfig" [maxDate]="maxDate" [(ngModel)]="selectedDate"
-                    (bsValueChange)="onDateChange($event)">
-                <button class="btn btn-outline-secondary light-secondary-border border-0" type="button"
-                    (click)="dp.show()">
-                    <i class="bi bi-calendar3"></i>
-                </button>
+            <div class="text-end d-flex gap-2">
+                <!-- Stock Symbol Search -->
+                <div class="search-container">
+                    <input type="text" placeholder="Search Symbol..." class="form-control" [(ngModel)]="searchSymbol"
+                        [typeahead]="stockSymbols" (typeaheadOnSelect)="onStockSelect($event)"
+                        (ngModelChange)="onSearchChange($event)" typeaheadOptionField="symbol" [typeaheadMinLength]="1"
+                        [typeaheadScrollable]="true" [typeaheadOptionsInScrollableView]="7" style="width: 200px;">
+                    @if (searchSymbol) {
+                    <button class="btn btn-sm btn-link text-secondary" (click)="resetFilters()"
+                        style="position: absolute; right: 5px; top: 2px;">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                    }
+                </div>
+
+                <!-- Date Picker -->
+                <div class="d-flex">
+                    <input type="text" placeholder="Select Date" class="form-control" bsDatepicker #dp="bsDatepicker"
+                        [bsConfig]="bsConfig" [maxDate]="maxDate" [(ngModel)]="selectedDate"
+                        (bsValueChange)="onDateChange($event)" style="width: 150px;">
+                    <button class="btn btn-outline-secondary light-secondary-border border-0" type="button"
+                        (click)="dp.show()">
+                        <i class="bi bi-calendar3"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -262,15 +279,13 @@
         <div class="d-flex h-100">
             <!-- Vertical Tabs -->
             <div class="vertical-tabs bg-light border-end">
-                <div class="vertical-tab-item" 
-                     [class.active]="selectedHistoryTab() === 'score'"
-                     (click)="selectedHistoryTab.set('score')">
+                <div class="vertical-tab-item" [class.active]="selectedHistoryTab() === 'score'"
+                    (click)="selectedHistoryTab.set('score')">
                     <i class="bi bi-graph-up me-2"></i>
                     <span>Score vs Confidence</span>
                 </div>
-                <div class="vertical-tab-item" 
-                     [class.active]="selectedHistoryTab() === 'volume'"
-                     (click)="selectedHistoryTab.set('volume')">
+                <div class="vertical-tab-item" [class.active]="selectedHistoryTab() === 'volume'"
+                    (click)="selectedHistoryTab.set('volume')">
                     <i class="bi bi-bar-chart-line me-2"></i>
                     <span>Volume & Delivery Trend</span>
                 </div>
@@ -284,18 +299,16 @@
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body">
                             <p class="text-muted mb-4">
-                               
+
                             </p>
-                            <highcharts-chart
-                                [options]="scoreChartOptions"
-                                [update]="updateFlag"
+                            <highcharts-chart [options]="scoreChartOptions" [update]="updateFlag"
                                 style="width: 100%; display: block;">
                             </highcharts-chart>
                         </div>
                     </div>
                 </div>
                 }
-                
+
                 @if (selectedHistoryTab() === 'volume') {
                 <div class="tab-content-section">
                     <h5 class="mb-4">Volume & Delivery Trend Analysis</h5>
@@ -303,9 +316,7 @@
                         <div class="card-body">
                             <p class="text-muted mb-4">
                             </p>
-                            <highcharts-chart
-                                [options]="volumeChartOptions"
-                                [update]="updateFlag"
+                            <highcharts-chart [options]="volumeChartOptions" [update]="updateFlag"
                                 style="width: 100%; display: block;">
                             </highcharts-chart>
                         </div>
