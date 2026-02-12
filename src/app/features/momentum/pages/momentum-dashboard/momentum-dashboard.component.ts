@@ -13,6 +13,7 @@ import { CommonService } from '@shared/services/common.service';
 import { IMomentumDecision } from '@feature/momentum/models/momentum-decision.model';
 import { HighchartsChartComponent } from 'highcharts-angular';
 import * as Highcharts from 'highcharts';
+import moment from 'moment';
 
 @Component({
     selector: 'app-momentum-dashboard',
@@ -194,13 +195,13 @@ export class MomentumDashboardComponent implements OnInit {
 
     initializeCharts(stock: IMomentumDecision) {
         // Generate mock historical data (replace with actual API call)
-        const historicalData = this.generateMockHistoricalData(stock);
+        const historicalData = this.generateMockHistoricalData(stock.pastData || []);
 
         // Score vs Confidence Chart
         this.scoreChartOptions = {
             chart: {
                 type: 'line',
-                height: 700
+                height: 500
             },
             title: {
                 text: `${stock.symbol} - Score & Confidence Trend`,
@@ -272,7 +273,7 @@ export class MomentumDashboardComponent implements OnInit {
         this.volumeChartOptions = {
             chart: {
                 type: 'column',
-                height: 700
+                height: 500
             },
             title: {
                 text: `${stock.symbol} - Volume & Delivery Trend`,
@@ -284,7 +285,7 @@ export class MomentumDashboardComponent implements OnInit {
             xAxis: {
                 categories: historicalData.dates,
                 title: {
-                    text: 'Date'
+                    text: ''
                 },
                 labels: {
                     rotation: -45,
@@ -295,7 +296,7 @@ export class MomentumDashboardComponent implements OnInit {
             },
             yAxis: [{
                 title: {
-                    text: 'Percentage (%)',
+                    text: '',
                     style: { color: '#333' }
                 },
                 min: 0,
@@ -316,7 +317,7 @@ export class MomentumDashboardComponent implements OnInit {
                     color: '#FFFFFF',
                     align: 'right',
                     format: '{point.y:.1f}%',
-                    y: 10,
+                    y: 30,
                     style: {
                         fontSize: '11px',
                         fontWeight: 'bold'
@@ -333,7 +334,7 @@ export class MomentumDashboardComponent implements OnInit {
                     color: '#FFFFFF',
                     align: 'right',
                     format: '{point.y:.1f}%',
-                    y: 10,
+                    y: 30,
                     style: {
                         fontSize: '11px',
                         fontWeight: 'bold'
@@ -353,7 +354,7 @@ export class MomentumDashboardComponent implements OnInit {
             },
             plotOptions: {
                 column: {
-                    pointPadding: 0.2,
+                    pointPadding: 0.1,
                     borderWidth: 0
                 }
             }
@@ -362,39 +363,26 @@ export class MomentumDashboardComponent implements OnInit {
         this.updateFlag = true;
     }
 
-    generateMockHistoricalData(stock: IMomentumDecision) {
-        // Generate 10 days of mock historical data
+    generateMockHistoricalData(stocks: Array<IMomentumDecision>) {
+        // Generate 10 days of historical data based on stock metrics
         const dates: string[] = [];
         const scores: number[] = [];
         const confidence: number[] = [];
         const volumeTrend: number[] = [];
         const delivery: number[] = [];
 
-        const today = new Date();
-        const baseScore = stock.total_score;
-        const baseDelivery = stock.delivery_avg_10d;
-        const baseVolume = stock.volume_trend_60d;
+        for (const stock of stocks) {
+            const tradeDate = moment(stock.trade_date).format('DD-MMM');
+            const currentScore = stock.total_score;
+            const currentConfidence = stock.confidence;
+            const currentVolume = stock.volume_trend_60d;
+            const currentDelivery = stock.delivery_avg_10d;
 
-        for (let i = 9; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            dates.push(date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
-
-            // Generate realistic variations
-            const scoreVariation = (Math.random() - 0.5) * 2;
-            scores.push(parseFloat((baseScore + scoreVariation).toFixed(1)));
-
-            // Confidence based on score (scaled to percentage)
-            const confidenceValue = (baseScore + scoreVariation) * 10;
-            confidence.push(parseFloat(confidenceValue.toFixed(1)));
-
-            // Volume trend variations
-            const volumeVariation = (Math.random() - 0.5) * 20;
-            volumeTrend.push(parseFloat((baseVolume + volumeVariation).toFixed(1)));
-
-            // Delivery variations
-            const deliveryVariation = (Math.random() - 0.5) * 10;
-            delivery.push(parseFloat((baseDelivery + deliveryVariation).toFixed(1)));
+            dates.push(tradeDate);
+            scores.push(parseFloat(currentScore.toFixed(1)));
+            confidence.push(parseFloat(currentConfidence.toFixed(1)));
+            volumeTrend.push(parseFloat(currentVolume.toFixed(1)));
+            delivery.push(parseFloat(currentDelivery.toFixed(1)));
         }
 
         return { dates, scores, confidence, volumeTrend, delivery };
@@ -414,7 +402,7 @@ export class MomentumDashboardComponent implements OnInit {
             this.closeDetailPanel();
         }
     }
-    
+
     closeDetailPanel() {
         this.isPanelOpen.set(false);
     }

@@ -2,6 +2,7 @@ export interface IMomentumDecision {
     symbol: string;
     industry: string;
     indices: string;
+    trade_date: string;
     isFno: boolean;
     current_price: number;
     target_price: number;
@@ -20,46 +21,22 @@ export interface IMomentumDecision {
     profit_vs_peers: number;
     rating: 'STRONG BUY' | 'BUY' | 'ACCUMULATE' | 'AVOID' | 'HOLD' | string;
     expected_days: number;
-    past_ratings?: Array<string>;
+    pastData?: Array<IMomentumDecision>;
 }
 
 export class MomentumDecisionModel {
-    static mapDbToMomentumDecision(date: string, items: Array<any>): Array<IMomentumDecision> {
+    static mapDbToMomentumDecision(selectedDate: string, items: Array<any>): Array<IMomentumDecision> {
         if (!items || items.length === 0) {
             throw new Error('Invalid data');
         }
-        const grouped = items.reduce((acc, item) => {
-            const symbol = item.stock?.symbol ?? '';
-            if (!acc[symbol]) acc[symbol] = [];
-            acc[symbol].push(item);
-            return acc;
-        }, {} as Record<string, any[]>);
 
-        const latestItems = Object.values(grouped).map((group: any) => {
-            const findIndex = group.findIndex((i:any) => i.trade_date === date);
-            if (findIndex === -1) {
-                // If not found, return the most recent entry
-                const sorted = group.sort((a:any, b:any) => new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime());
-                const latest = sorted[0];
-                latest.past_ratings = sorted.slice(1, 5).map((i:any) => i.rating);
-                return latest;
-            } else {
-                const latest = group[findIndex];
-                // Map ratings except the one at findIndex
-                const ratings = group
-                    .filter((_: any, idx: number) => idx !== findIndex)
-                    .map((i: any) => i.rating);
-                latest.past_ratings = ratings;
-                return latest;
-            }
-        });
-
-        return latestItems.map(item => {
+        const mappedItems = items.map(item => {
             return {
                 symbol: item.stock?.symbol ?? '',
                 industry: item.stock?.industry ?? '',
                 indices: item.stock?.indices ?? '',
                 isFno: item.stock?.isFno ?? false,
+                trade_date: item.trade_date,
                 current_price: parseFloat(item.current_price),
                 target_price: parseFloat(item.target_price),
                 stop_loss: parseFloat(item.stop_loss),
@@ -77,8 +54,34 @@ export class MomentumDecisionModel {
                 profit_vs_peers: parseFloat(item.profit_vs_peers),
                 rating: item.rating,
                 expected_days: item.expected_days,
-                past_ratings: item.past_ratings || []
+                pastData: item.pastData || []
             };
         });
+
+        const grouped = mappedItems.reduce((acc, item) => {
+            const symbol = item.symbol ?? '';
+            if (!acc[symbol]) acc[symbol] = [];
+            acc[symbol].push(item);
+            return acc;
+        }, {} as Record<string, any[]>);
+
+        const latestItems = Object.values(grouped).map((group: any) => {
+            const findIndex = group.findIndex((i: any) => i.trade_date === selectedDate);
+            if (findIndex === -1) {
+                // If not found, return the most recent entry
+                const sorted = group.sort((a: any, b: any) => new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime());
+                const latest = sorted[0];
+                latest.pastData = sorted 
+                return latest;
+            } else {
+                const latest = group[findIndex];
+                // Map ratings except the one at findIndex
+                // const pastData = group.filter((_: any, idx: number) => idx !== findIndex);
+                latest.pastData = group;
+                return latest;
+            }
+        });
+
+        return latestItems;
     }
 }
