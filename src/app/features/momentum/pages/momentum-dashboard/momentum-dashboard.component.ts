@@ -100,7 +100,7 @@ export class MomentumDashboardComponent implements OnInit {
             this.allData.set(momentumData);
             this.filterByAction('STRONG BUY');
             this.isLoading.set(false);
-            
+
             // Populate stock symbols for typeahead
             this.stockSymbols = momentumData.map(stock => stock.symbol).sort();
         });
@@ -117,7 +117,7 @@ export class MomentumDashboardComponent implements OnInit {
                 this.allData.set(momentumData);
                 this.filterByAction('STRONG BUY');
                 this.isLoading.set(false);
-                
+
                 // Update stock symbols for typeahead
                 this.stockSymbols = momentumData.map(stock => stock.symbol).sort();
             });
@@ -212,7 +212,7 @@ export class MomentumDashboardComponent implements OnInit {
         this.selectedStockForHistory.set(stock);
         this.initializeCharts(stock);
         this.modalRef = this.modalService.show(template, {
-            class: 'modal-xlg',
+            class: 'modal-lg-95',
             backdrop: 'static',
             keyboard: true
         });
@@ -243,50 +243,74 @@ export class MomentumDashboardComponent implements OnInit {
             xAxis: {
                 categories: historicalData.dates,
                 title: {
-                    text: 'Date'
+                    text: ''
                 }
             },
-            yAxis: [{
-                title: {
-                    text: 'Score',
-                    style: { color: '#0d6efd' }
+            yAxis: [
+                {
+                    title: {
+                        text: 'Score',
+                        style: { color: '#0d6efd' }
+                    },
+                    min: 0,
+                    max: 10,
+                    tickPositions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    gridLineWidth: 1
+                }, {
+                    title: {
+                        text: 'Confidence (%)',
+                        style: { color: '#198754' }
+                    },
+                    opposite: true,
+                    min: 0,
+                    max: 100,
+                    tickPositions: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                    gridLineWidth: 0
+                }],
+            series: [
+                {
+                    name: 'Score',
+                    type: 'line',
+                    data: historicalData.scores,
+                    color: '#0d6efd',
+                    marker: {
+                        enabled: true,
+                        radius: 4
+                    },
+                    yAxis: 0,
+                    dataLabels: {
+                        enabled: false
+                    }
                 },
-                min: 0,
-                max: 10,
-                tickPositions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                gridLineWidth: 1
-            }, {
-                title: {
-                    text: 'Confidence (%)',
-                    style: { color: '#198754' }
-                },
-                opposite: true,
-                min: 0,
-                max: 100,
-                tickPositions: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-                gridLineWidth: 0
-            }],
-            series: [{
-                name: 'Score',
-                type: 'line',
-                data: historicalData.scores,
-                color: '#0d6efd',
-                marker: {
-                    enabled: true,
-                    radius: 4
-                },
-                yAxis: 0
-            }, {
-                name: 'Confidence',
-                type: 'line',
-                data: historicalData.confidence,
-                color: '#198754',
-                marker: {
-                    enabled: true,
-                    radius: 4
-                },
-                yAxis: 1
-            }],
+                {
+                    name: 'Confidence',
+                    type: 'line',
+                    data: historicalData.confidence.map((val, idx) => ({
+                        y: val,
+                        rating: historicalData.ratings[idx]
+                    })),
+                    color: '#198754',
+                    marker: {
+                        enabled: true,
+                        radius: 4
+                    },
+                    yAxis: 1,
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function () {
+                            // @ts-ignore
+                            return this.point.rating !== undefined ? this.point.rating : '';
+                        },
+                        style: {
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            color: '#333'
+                        },
+                        align: 'center',
+                        verticalAlign: 'bottom'
+                    }
+                }
+            ],
             tooltip: {
                 shared: true
             },
@@ -308,7 +332,7 @@ export class MomentumDashboardComponent implements OnInit {
             title: {
                 text: `${stock.symbol} - Volume & Delivery Trend`,
                 style: {
-                    fontSize: '16px',
+                    fontSize: '15px',
                     fontWeight: 'bold'
                 }
             },
@@ -337,20 +361,23 @@ export class MomentumDashboardComponent implements OnInit {
                 }
             }],
             series: [{
-                name: 'Volume Trend',
+                name: 'Volume',
                 type: 'column',
                 data: historicalData.volumeTrend,
                 color: '#fd7e14',
                 dataLabels: {
                     enabled: true,
                     rotation: -90,
-                    color: '#FFFFFF',
-                    align: 'right',
+                    align: 'center',
                     format: '{point.y:.1f}%',
-                    y: 30,
+                    y: 0,
+                    inside: false,
+                    overflow: 'allow',
+                    crop: false,
                     style: {
                         fontSize: '11px',
-                        fontWeight: 'bold'
+                        color: '#000',
+                        textOutline: 'none'
                     }
                 }
             }, {
@@ -361,13 +388,16 @@ export class MomentumDashboardComponent implements OnInit {
                 dataLabels: {
                     enabled: true,
                     rotation: -90,
-                    color: '#FFFFFF',
-                    align: 'right',
+                    align: 'center',
                     format: '{point.y:.1f}%',
-                    y: 30,
+                    y: 0,
+                    inside: false,
+                    overflow: 'allow',
+                    crop: false,
                     style: {
                         fontSize: '11px',
-                        fontWeight: 'bold'
+                        color: '#000',
+                        textOutline: 'none'
                     }
                 }
             }],
@@ -400,6 +430,7 @@ export class MomentumDashboardComponent implements OnInit {
         const confidence: number[] = [];
         const volumeTrend: number[] = [];
         const delivery: number[] = [];
+        const ratings: string[] = [];
 
         for (const stock of stocks) {
             const tradeDate = moment(stock.trade_date).format('DD-MMM');
@@ -407,15 +438,22 @@ export class MomentumDashboardComponent implements OnInit {
             const currentConfidence = stock.confidence;
             const currentVolume = stock.volume_trend_60d;
             const currentDelivery = stock.delivery_avg_10d;
+            const currentRating =
+                stock.rating === 'STRONG BUY' ? 'SB' :
+                    stock.rating === 'BUY' ? 'B' :
+                        stock.rating === 'ACCUMULATE' ? 'A' :
+                            stock.rating === 'HOLD' ? 'H' :
+                                stock.rating === 'AVOID' ? 'AV' : '';
 
             dates.push(tradeDate);
             scores.push(parseFloat(currentScore.toFixed(1)));
             confidence.push(parseFloat(currentConfidence.toFixed(1)));
             volumeTrend.push(parseFloat(currentVolume.toFixed(1)));
             delivery.push(parseFloat(currentDelivery.toFixed(1)));
+            ratings.push(currentRating);
         }
 
-        return { dates, scores, confidence, volumeTrend, delivery };
+        return { dates, scores, confidence, volumeTrend, delivery, ratings };
     }
 
     // Listen for ESC key to close the detail panel
