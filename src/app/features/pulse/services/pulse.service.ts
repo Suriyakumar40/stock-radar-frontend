@@ -7,7 +7,7 @@ import { IRankedGroup, RankedGroupModel } from '../models/ranked-group.model';
 import { IPulseStock, PulseStockModel } from '../models/pulse-stock.model';
 import { IPulseStockDetail, PulseStockDetailModel } from '../models/pulse-stock-detail.model';
 import { ISignal, SignalModel } from '../models/signal.model';
-import { ScreenerHorizon, IScreenerWatchlist, IScreenerHistory, ScreenerModel } from '../models/screener.model';
+import { ScreenerHorizon, IScreenerWatchlist, IScreenerHistory, IScreenerSectorHistory, ScreenerModel } from '../models/screener.model';
 
 export interface IDatedResult<T> {
     date: string;
@@ -140,6 +140,17 @@ export class PulseService {
             map((res: any) => ScreenerModel.mapDbToHistory(res?.data)),
             catchError(error => {
                 console.error(`Error fetching ${horizon} screener history:`, error);
+                return of(null);
+            })
+        );
+    }
+
+    getScreenerSectorHistory(horizon: ScreenerHorizon, date?: string, windowDays: number = 20): Observable<IScreenerSectorHistory | null> {
+        const url = `${this.apiUrl}/screener/sector-history?horizon=${horizon}&date=${encodeURIComponent(date ?? 'latest')}&windowDays=${windowDays}`;
+        return this.http.get(url).pipe(
+            map((res: any) => ScreenerModel.mapDbToSectorHistory(res?.data)),
+            catchError(error => {
+                console.error(`Error fetching ${horizon} screener sector history:`, error);
                 return of(null);
             })
         );

@@ -54,55 +54,147 @@
         }
     </div>
 
-    <!-- List panel -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0 pt-3">
-            <h5 class="mb-0">{{ activeHorizon() }} — as of {{ resolvedDateDisplay() }}</h5>
-        </div>
-        <div class="card-body pt-0">
-            @if (activeList().length === 0) {
-            <p class="text-muted text-center py-4 mb-0">No stocks appeared for this horizon in the selected window.</p>
-            } @else {
-            <div class="table-responsive">
-                <table class="table table-hover table-sm mb-0 align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Company</th>
-                            <th>Index</th>
-                            <th>Sector</th>
-                            <th class="text-end">Score</th>
-                            <th>Status</th>
-                            <th class="text-center">Appeared</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (stock of activeList(); track stock.stockId) {
-                        <tr style="cursor: pointer;" (click)="openStockDetail(stock)">
-                            <td><strong>{{ stock.symbol }}</strong></td>
-                            <td class="text-truncate" style="max-width: 220px;">{{ stock.companyName }}</td>
-                            <td>
-                                @if (indicesFor(stock.symbol); as idx) {
-                                <span class="badge bg-light text-dark border small">{{ idx }}</span>
+    <!-- Sector leaderboard + stock list -->
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-3">
+                    <h6 class="mb-0">Top sectors — last {{ windowDays() }} days ending {{ resolvedDateDisplay() }}</h6>
+                </div>
+                <div class="card-body pt-0">
+                    @if (activeSectors().length === 0) {
+                    <p class="text-muted text-center py-3 mb-0 small">No sector qualified for this horizon in the selected window.</p>
+                    } @else {
+                    <div class="list-group list-group-flush">
+                        <button type="button" class="list-group-item list-group-item-action px-2 py-2 small"
+                            [class.active]="selectedSector() === null" (click)="selectedSector.set(null)">
+                            All sectors
+                        </button>
+                        @for (sector of activeSectors(); track sector.sector) {
+                        <button type="button" class="list-group-item list-group-item-action px-2 py-2"
+                            [class.active]="selectedSector() === sector.sector" (click)="selectSector(sector.sector)">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>
+                                    @if (sector.qualifyingToday) {
+                                    <span class="badge bg-secondary me-2">#{{ sector.rank }}</span>
+                                    }
+                                    <strong>{{ sector.sector }}</strong>
+                                    @if (sector.isNew) {
+                                    <i class="bi bi-stars text-primary ms-1" title="New to the top sectors this window"></i>
+                                    }
+                                </span>
+                                <span class="small text-muted">{{ sector.score | number:'1.2-2' }} · {{ sector.appearedCount }}/{{ windowDays() }}</span>
+                            </div>
+                            @if (!sector.qualifyingToday) {
+                            <div class="small">
+                                <span class="badge bg-warning-subtle text-warning-emphasis">🟡 {{ statusLabel(sector) }}</span>
+                            </div>
+                            }
+                            <div class="small mt-1 d-flex flex-wrap gap-2">
+                                @switch (momentumDirection(sector)) {
+                                @case ('up') {
+                                <span class="text-success"><i class="bi bi-caret-up-fill"></i> {{ sector.momentum }} ranks</span>
                                 }
-                            </td>
-                            <td class="small text-muted">{{ stock.sector }}</td>
-                            <td class="text-end">{{ stock.latestScore | number:'1.2-2' }}</td>
-                            <td>
-                                @if (stock.qualifyingToday) {
-                                <span class="badge bg-success-subtle text-success">🟢 {{ statusLabel(stock) }}</span>
-                                } @else {
-                                <span class="badge bg-warning-subtle text-warning-emphasis">🟡 {{ statusLabel(stock)
-                                    }}</span>
+                                @case ('down') {
+                                <span class="text-danger"><i class="bi bi-caret-down-fill"></i> {{ -sector.momentum }} ranks</span>
                                 }
-                            </td>
-                            <td class="text-center">{{ stock.appearedCount }}/{{ windowDays() }}</td>
-                        </tr>
+                                @default {
+                                <span class="text-muted">─ flat</span>
+                                }
+                                }
+                                <span class="text-muted">{{ sector.volExpansion | number:'1.2-2' }}× volume</span>
+                                @if (sector.instFlow !== null) {
+                                @switch (instFlowDirection(sector)) {
+                                @case ('up') {
+                                <span class="text-success"><i class="bi bi-caret-up-fill"></i> inst. flow</span>
+                                }
+                                @case ('down') {
+                                <span class="text-danger"><i class="bi bi-caret-down-fill"></i> inst. flow</span>
+                                }
+                                @default {
+                                <span class="text-muted">─ inst. flow</span>
+                                }
+                                }
+                                }
+                            </div>
+                        </button>
                         }
-                    </tbody>
-                </table>
+                    </div>
+                    }
+                </div>
             </div>
-            }
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-3">
+                    <h5 class="mb-0">
+                        {{ activeHorizon() }} — last {{ windowDays() }} days ending {{ resolvedDateDisplay() }}
+                        @if (selectedSector(); as sector) {
+                        <span class="badge bg-primary-subtle text-primary ms-2">{{ sector }}
+                            <i class="bi bi-x-circle-fill ms-1" style="cursor: pointer;" (click)="selectedSector.set(null)"></i>
+                        </span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+                    @if (filteredList().length === 0 && activeList().length === 0) {
+                    <p class="text-muted text-center py-4 mb-0">No stocks appeared for this horizon in the selected window.</p>
+                    } @else if (filteredList().length === 0) {
+                    <p class="text-muted text-center py-4 mb-0">
+                        No stocks in the selected window are tagged with sector "{{ selectedSector() }}".
+                        <br>
+                        <button type="button" class="btn btn-link btn-sm p-0" (click)="selectedSector.set(null)">Clear the filter</button>
+                        to see all {{ activeList().length }} stocks.
+                    </p>
+                    } @else {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Company</th>
+                                    <th>Index</th>
+                                    <th>Sector</th>
+                                    <th class="text-end">Score</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Appeared</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (stock of filteredList(); track stock.stockId) {
+                                <tr style="cursor: pointer;" (click)="openStockDetail(stock)">
+                                    <td>
+                                        <strong>{{ stock.symbol }}</strong>
+                                        @if (isNewSectorStock(stock)) {
+                                        <i class="bi bi-stars text-primary ms-1" title="This stock's sector is new to the top sectors this window"></i>
+                                        }
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 220px;">{{ stock.companyName }}</td>
+                                    <td>
+                                        @if (indicesFor(stock.symbol); as idx) {
+                                        <span class="badge bg-light text-dark border small">{{ idx }}</span>
+                                        }
+                                    </td>
+                                    <td class="small text-muted">{{ stock.sector }}</td>
+                                    <td class="text-end">{{ stock.latestScore | number:'1.2-2' }}</td>
+                                    <td>
+                                        @if (stock.qualifyingToday) {
+                                        <span class="badge bg-success-subtle text-success">🟢 {{ statusLabel(stock) }}</span>
+                                        } @else {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">🟡 {{ statusLabel(stock)
+                                            }}</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">{{ stock.appearedCount }}/{{ windowDays() }}</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
     }

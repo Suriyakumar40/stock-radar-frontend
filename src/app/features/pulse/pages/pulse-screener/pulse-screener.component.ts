@@ -7,7 +7,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { HelperModel } from '@shared/helper';
 import { CommonService } from '@shared/services/common.service';
 import { PulseService } from '../../services/pulse.service';
-import { ScreenerHorizon, IScreenerHistory, IScreenerHistoryStock } from '../../models/screener.model';
+import { ScreenerHorizon, IScreenerHistory, IScreenerHistoryStock, IScreenerSectorHistory, IScreenerSectorHistoryEntry } from '../../models/screener.model';
 import { StockDetailModalComponent } from '../../components/stock-detail-modal/stock-detail-modal.component';
 
 const HORIZONS: ScreenerHorizon[] = ['SWING', 'POSITIONAL', 'CROSS'];
@@ -44,6 +44,12 @@ export class PulseScreenerComponent implements OnInit {
     histories: WritableSignal<Record<ScreenerHorizon, IScreenerHistory | null>> = signal({
         SWING: null, POSITIONAL: null, CROSS: null
     });
+    /** Rolling-window sector leaderboard — shares this page's one windowDays control with the stock list. */
+    sectorHistories: WritableSignal<Record<ScreenerHorizon, IScreenerSectorHistory | null>> = signal({
+        SWING: null, POSITIONAL: null, CROSS: null
+    });
+    /** Sector row clicked in the leaderboard — filters the stock list below; null = all sectors. */
+    selectedSector: WritableSignal<string | null> = signal(null);
     isLoading: WritableSignal<boolean> = signal(true);
     /** symbol -> indices (e.g. "NIFTY 50"), for the identification badge in the list. */
     stockIndices: WritableSignal<Map<string, string | undefined>> = signal(new Map());
@@ -74,6 +80,17 @@ export class PulseScreenerComponent implements OnInit {
     });
 
     readonly activeList = computed<IScreenerHistoryStock[]>(() => this.histories()[this.activeHorizon()]?.stocks ?? []);
+
+    readonly activeSectors = computed<IScreenerSectorHistoryEntry[]>(() => this.sectorHistories()[this.activeHorizon()]?.sectors ?? []);
+
+    /** Sectors that just broke into the top ranks this window — surfaced both on the sector row and on stocks in that sector. */
+    readonly newSectorNames = computed<Set<string>>(() => new Set(this.activeSectors().filter(s => s.isNew).map(s => s.sector)));
+
+    readonly filteredList = computed<IScreenerHistoryStock[]>(() => {
+        const sector = this.selectedSector();
+        const list = this.activeList();
+        return sector ? list.filter(s => s.sector === sector) : list;
+    });
 
     readonly resolvedDate = computed<string | null>(() => {
         const h = this.histories();
@@ -109,14 +126,21 @@ export class PulseScreenerComponent implements OnInit {
      */
     private loadData(date?: string): void {
         this.isLoading.set(true);
+        this.selectedSector.set(null); // sector composition can change with the date — don't carry a stale filter over
         const isInitialLoad = date === undefined;
         const windowDays = this.windowDays();
         forkJoin({
             SWING: this.pulseService.getScreenerHistory('SWING', date, windowDays),
             POSITIONAL: this.pulseService.getScreenerHistory('POSITIONAL', date, windowDays),
-            CROSS: this.pulseService.getScreenerHistory('CROSS', date, windowDays)
+            CROSS: this.pulseService.getScreenerHistory('CROSS', date, windowDays),
+            SWING_SECTORS: this.pulseService.getScreenerSectorHistory('SWING', date, windowDays),
+            POSITIONAL_SECTORS: this.pulseService.getScreenerSectorHistory('POSITIONAL', date, windowDays),
+            CROSS_SECTORS: this.pulseService.getScreenerSectorHistory('CROSS', date, windowDays)
         }).subscribe(result => {
-            this.histories.set(result);
+            this.histories.set({ SWING: result.SWING, POSITIONAL: result.POSITIONAL, CROSS: result.CROSS });
+            this.sectorHistories.set({
+                SWING: result.SWING_SECTORS, POSITIONAL: result.POSITIONAL_SECTORS, CROSS: result.CROSS_SECTORS
+            });
             const resolvedDate = result.CROSS?.date ?? result.SWING?.date ?? result.POSITIONAL?.date;
             if (resolvedDate) {
                 this.isSyncingDate = true;
@@ -144,12 +168,32 @@ export class PulseScreenerComponent implements OnInit {
 
     selectHorizon(horizon: ScreenerHorizon): void {
         this.activeHorizon.set(horizon);
+        this.selectedSector.set(null); // each horizon has its own sector leaderboard — a filter from the last one wouldn't apply
     }
 
-    statusLabel(stock: IScreenerHistoryStock): string {
-        if (stock.qualifyingToday) return 'Qualifying today';
-        const n = stock.tradingDaysSinceLastSeen;
+    selectSector(sector: string): void {
+        this.selectedSector.set(this.selectedSector() === sector ? null : sector);
+    }
+
+    statusLabel(item: { qualifyingToday: boolean; tradingDaysSinceLastSeen: number }): string {
+        if (item.qualifyingToday) return 'Qualifying today';
+        const n = item.tradingDaysSinceLastSeen;
         return `Last seen ${n} trading day${n === 1 ? '' : 's'} ago`;
+    }
+
+    /** Momentum = rank(D-15/60) - rank(D); positive means the sector's rank improved. */
+    momentumDirection(sector: IScreenerSectorHistoryEntry): 'up' | 'down' | 'flat' {
+        return sector.momentum > 0 ? 'up' : sector.momentum < 0 ? 'down' : 'flat';
+    }
+
+    instFlowDirection(sector: IScreenerSectorHistoryEntry): 'up' | 'down' | 'flat' {
+        if (sector.instFlow === null) return 'flat';
+        return sector.instFlow > 0 ? 'up' : sector.instFlow < 0 ? 'down' : 'flat';
+    }
+
+    /** True when this stock's sector just broke into the top ranks this window — mirrors the sector row's badge. */
+    isNewSectorStock(stock: IScreenerHistoryStock): boolean {
+        return this.newSectorNames().has(stock.sector);
     }
 
     indicesFor(symbol: string): string | undefined {
