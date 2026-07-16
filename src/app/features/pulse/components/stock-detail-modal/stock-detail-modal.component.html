@@ -1,0 +1,241 @@
+<div class="modal-header bg-light">
+    <h5 class="modal-title">
+        <i class="bi bi-info-circle me-2"></i>
+        {{ detail()?.symbol }}
+        <span class="text-muted small fw-normal">{{ detail()?.companyName }}</span>
+    </h5>
+    <button type="button" class="btn-close" (click)="close()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body p-0">
+    @if (isLoading()) {
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    } @else if (detail(); as d) {
+    <div class="px-3 pt-3">
+        <span class="badge bg-secondary me-1">{{ d.indices }}</span>
+        <span class="badge bg-light text-dark border me-1">{{ d.industry }}</span>
+        <span class="badge bg-light text-dark border">{{ d.sector }}</span>
+        @if (d.isFno) {
+        <i class="bi bi-lightning-fill text-warning ms-1" title="F&amp;O Stock"></i>
+        }
+    </div>
+
+    <ul class="nav nav-tabs px-3 pt-2 mt-2 border-bottom">
+        @if (screenerHorizon) {
+        <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab() === 'screener'" (click)="setTab('screener')"
+                type="button">
+                <i class="bi bi-radar me-1"></i> Screener
+            </button>
+        </li>
+        }
+        <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab() === 'financials'" (click)="setTab('financials')"
+                type="button">
+                <i class="bi bi-bar-chart-fill me-1"></i> Financials
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab() === 'shareholding'" (click)="setTab('shareholding')"
+                type="button">
+                <i class="bi bi-briefcase-fill me-1"></i> Shareholding Trend
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab() === 'sector-signals'"
+                (click)="setTab('sector-signals')" type="button">
+                <i class="bi bi-clock-history me-1"></i> Sector Signals
+            </button>
+        </li>
+    </ul>
+
+    <div class="p-3" style="max-height: 65vh; overflow-y: auto;">
+
+        @if (activeTab() === 'screener' && screenerHistoryStock) {
+        <div class="mb-3">
+            <span class="badge bg-primary me-2">{{ screenerHorizon }}</span>
+            <span class="text-muted small">
+                Appeared {{ screenerHistoryStock.appearedCount }} times in the window · first seen {{
+                formatScreenerDate(screenerHistoryStock.firstSeenDate) }} · last seen {{
+                formatScreenerDate(screenerHistoryStock.lastSeenDate) }}
+            </span>
+        </div>
+
+        @if (isAgingCrossPick()) {
+        <div class="alert alert-warning py-2 small">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Cross-horizon picks historically fade after ~20 trading days — this one is aging
+            ({{ screenerHistoryStock.tradingDaysSinceFirstSeen }} trading days since first seen), worth a fresh look
+            rather than assuming it still holds.
+        </div>
+        }
+
+        <h6 class="mt-3">Score breakdown</h6>
+        @if (screenerBreakdown(); as b) {
+        <table class="table table-sm table-hover align-middle">
+            <tbody>
+                <tr>
+                    <td>Delivery ratio</td>
+                    <td class="text-end">{{ b.deliveryRatio | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                    <td>Volume ratio</td>
+                    <td class="text-end">{{ b.volRatio | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                    <td>ADX delta</td>
+                    <td class="text-end">{{ b.adxDelta | number:'1.2-2' }}</td>
+                </tr>
+                @if (b.instFlowScore !== null) {
+                <tr>
+                    <td>Institutional flow score</td>
+                    <td class="text-end">{{ b.instFlowScore | number:'1.2-2' }}</td>
+                </tr>
+                }
+                @if (b.earningsScore !== null) {
+                <tr>
+                    <td>Earnings score</td>
+                    <td class="text-end">{{ b.earningsScore | number:'1.2-2' }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        } @else {
+        <p class="text-muted small">Score breakdown not available for this pick's last-seen date.</p>
+        }
+
+        <h6 class="mt-3">Appearance history</h6>
+        <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th class="text-end">Price then</th>
+                    <th class="text-end">Price now</th>
+                    <th class="text-end">Change</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (a of screenerHistoryStock.appearances; track a.date) {
+                <tr>
+                    <td>{{ formatScreenerDate(a.date) }}</td>
+                    <td class="text-end">₹{{ a.priceThen | number:'1.2-2' }}</td>
+                    <td class="text-end">₹{{ a.priceNow | number:'1.2-2' }}</td>
+                    <td class="text-end" [class.text-success]="a.changePct > 0"
+                        [class.text-danger]="a.changePct < 0">
+                        {{ a.changePct > 0 ? '+' : '' }}{{ a.changePct | number:'1.2-2' }}%
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        }
+
+        @if (activeTab() === 'financials') {
+        @if (d.financials.length === 0) {
+        <p class="text-muted text-center py-4 mb-0">No financial results available.</p>
+        } @else {
+        <div class="card border-0 mb-3">
+            <div class="card-body">
+                <highcharts-chart [options]="salesChartOptions" [update]="updateFlag"
+                    style="width: 100%; display: block;"></highcharts-chart>
+            </div>
+        </div>
+        <div class="card border-0 mb-3">
+            <div class="card-body">
+                <highcharts-chart [options]="netProfitChartOptions" [update]="updateFlag"
+                    style="width: 100%; display: block;"></highcharts-chart>
+            </div>
+        </div>
+        <div class="card border-0">
+            <div class="card-body">
+                <highcharts-chart [options]="epsChartOptions" [update]="updateFlag"
+                    style="width: 100%; display: block;"></highcharts-chart>
+            </div>
+        </div>
+        }
+        }
+
+        @if (activeTab() === 'shareholding') {
+        @if (d.shareholding.length === 0) {
+        <p class="text-muted text-center py-4 mb-0">No shareholding data available.</p>
+        } @else {
+        @if (shareholdingFiledThisMonth; as filed) {
+        <div class="alert alert-warning py-2 small d-flex align-items-center mb-3">
+            <i class="bi bi-megaphone-fill me-2"></i>
+            New filing this month — {{ filed.submissionDate }}.
+        </div>
+        }
+        <div class="row row-cols-2 row-cols-md-4 g-2 mb-3">
+            @for (tile of shareholdingTiles; track tile.label) {
+            <div class="col">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body py-2 px-3">
+                        <div class="small text-muted d-flex align-items-center">
+                            <span class="rounded-circle me-1" [style.background]="tile.color"
+                                style="width: 8px; height: 8px; display: inline-block;"></span>
+                            {{ tile.label }}
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2">
+                            <span class="fw-bold">{{ tile.current !== null ? (tile.current | number:'1.1-1') + '%' : '—' }}</span>
+                            @switch (tile.direction) {
+                            @case ('up') {
+                            <span class="text-success small"><i class="bi bi-caret-up-fill"></i> {{ tile.delta! | number:'1.1-1' }}pp</span>
+                            }
+                            @case ('down') {
+                            <span class="text-danger small"><i class="bi bi-caret-down-fill"></i> {{ (-tile.delta!) | number:'1.1-1' }}pp</span>
+                            }
+                            @default {
+                            <span class="text-muted small">─ flat</span>
+                            }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        <div class="card border-0">
+            <div class="card-body">
+                <highcharts-chart [options]="shareholdingChartOptions" [update]="updateFlag"
+                    style="width: 100%; display: block;"></highcharts-chart>
+            </div>
+        </div>
+        }
+        }
+
+        @if (activeTab() === 'sector-signals') {
+        @if (d.sectorSignalHistory.length === 0) {
+        <p class="text-muted text-center py-4 mb-0">No sector-gated signal history yet.</p>
+        } @else {
+        <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th class="text-end">Price</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (sig of d.sectorSignalHistory; track sig.id) {
+                <tr>
+                    <td>{{ sig.tradeDate }}</td>
+                    <td><app-signal-badge [type]="sig.signalType" /></td>
+                    <td class="text-end">₹{{ sig.priceAtSignal | number:'1.2-2' }}</td>
+                    <td class="small text-muted">{{ sig.reason }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        }
+        }
+
+    </div>
+    } @else {
+    <p class="text-muted text-center py-5 mb-0">Failed to load stock detail.</p>
+    }
+</div>

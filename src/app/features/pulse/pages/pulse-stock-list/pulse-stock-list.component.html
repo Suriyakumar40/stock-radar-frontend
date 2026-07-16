@@ -1,0 +1,208 @@
+<div class="main-content bg-light">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-lightning-charge-fill"></i> Pulse — Sector Screener
+                </h1>
+                <p class="text-muted mb-0">Early signals and stocks, grouped by sector, strongest first.</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <input type="text" placeholder="Search symbol or company..." class="form-control"
+                    [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)" style="width: 220px;">
+                <select class="form-select" style="width: 180px;"
+                    (change)="onIndexFilterChange($any($event.target).value)">
+                    <option value="">All indices</option>
+                    @for (idx of indices; track idx) {
+                    <option [value]="idx">{{ idx }}</option>
+                    }
+                </select>
+                <div class="d-flex">
+                    <input type="text" placeholder="Select Date" class="form-control" bsDatepicker #dp="bsDatepicker"
+                        [bsConfig]="bsConfig" [maxDate]="maxDate" [(ngModel)]="selectedDate"
+                        (bsValueChange)="onDateChange($event)" style="width: 150px;">
+                    <button class="btn btn-outline-secondary light-secondary-border border-0" type="button"
+                        (click)="dp.show()">
+                        <i class="bi bi-calendar3"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading()) {
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Pulse data...</p>
+    </div>
+    } @else {
+
+    <!-- New Signals -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 pt-3">
+            <h5 class="mb-0"><i class="bi bi-bell-fill text-primary me-2"></i>New Sector Signals</h5>
+        </div>
+        <div class="card-body pt-0">
+            @if (signals().length === 0) {
+            <p class="text-muted mb-0">No WATCH, ENTRY or EXIT signals on this date.</p>
+            } @else {
+            <div class="d-flex flex-wrap gap-2">
+                @for (sig of signals(); track sig.id) {
+                <div class="signal-card" (click)="openStockDetail(sig.stockId)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>{{ sig.symbol }}</strong>
+                        <app-signal-badge [type]="sig.signalType" [isNew]="sig.isNew" />
+                    </div>
+                    <div class="small text-muted">{{ sig.sector }}</div>
+                    <div class="small text-muted text-truncate" style="max-width: 260px;" [title]="sig.reason">
+                        {{ sig.reason }}
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Anchor cards -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                @for (grp of anchorGroups(); track grp.id) {
+                <div class="group-anchor" (click)="scrollToGroup(grp.name)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>{{ grp.name }}</strong>
+                        @if (grp.isNew) {
+                        <i class="bi bi-stars text-primary" title="Newly entered the top 10"></i>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="text-muted small">#{{ grp.rsRank }}</span>
+                        @switch (rankDeltaIcon(grp)) {
+                        @case ('up') {
+                        <span class="text-success small"><i class="bi bi-caret-up-fill"></i> {{ rankDeltaValue(grp)
+                            }}</span>
+                        }
+                        @case ('down') {
+                        <span class="text-danger small"><i class="bi bi-caret-down-fill"></i> {{ rankDeltaValue(grp)
+                            }}</span>
+                        }
+                        @default {
+                        <span class="text-muted small">─</span>
+                        }
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            <button class="btn btn-sm btn-link mt-2 px-0" (click)="toggleShowAllAnchors()">
+                @if (showAllAnchors()) {
+                Show top 10 only
+                } @else {
+                View all {{ groups().length }} sectors →
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Grouped stock list -->
+    @if (groupedStocks().length === 0) {
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-search display-6 text-muted"></i>
+            <p class="text-muted mb-0 mt-2">No stocks match the current filters.</p>
+        </div>
+    </div>
+    }
+
+    @for (grp of groupedStocks(); track grp.group.id) {
+    <div class="card border-0 shadow-sm mb-2" [id]="anchorId(grp.group.name)">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center"
+            (click)="toggleGroup(grp.group.name)" style="cursor: pointer;">
+            <div>
+                <i class="bi" [class.bi-chevron-down]="isGroupExpanded(grp.group.name)"
+                    [class.bi-chevron-right]="!isGroupExpanded(grp.group.name)"></i>
+                <strong class="ms-2">{{ grp.group.name }}</strong>
+                @if (grp.group.isNew) {
+                <i class="bi bi-stars text-primary ms-1" title="Newly entered the top 10"></i>
+                }
+                <span class="text-muted small ms-2">#{{ grp.group.rsRank }} · {{ grp.stocks.length }} stocks</span>
+            </div>
+            @switch (rankDeltaIcon(grp.group)) {
+            @case ('up') {
+            <span class="text-success small"><i class="bi bi-caret-up-fill"></i> {{ rankDeltaValue(grp.group)
+                }}</span>
+            }
+            @case ('down') {
+            <span class="text-danger small"><i class="bi bi-caret-down-fill"></i> {{ rankDeltaValue(grp.group)
+                }}</span>
+            }
+            @default {
+            <span class="text-muted small">─</span>
+            }
+            }
+        </div>
+
+        @if (isGroupExpanded(grp.group.name)) {
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Company</th>
+                        <th>Index</th>
+                        <th>Signal</th>
+                        <th class="text-end">ADX(14)</th>
+                        <th class="text-end">RSI(14)</th>
+                        <th class="text-center">50DMA</th>
+                        <th class="text-center">200DMA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (stock of grp.stocks; track stock.stockId) {
+                    <tr (click)="openStockDetail(stock.stockId)" style="cursor: pointer;">
+                        <td>
+                            {{ stock.symbol }}
+                            @if (stock.isFno) {
+                            <i class="bi bi-lightning-fill text-warning" title="F&amp;O Stock"></i>
+                            }
+                        </td>
+                        <td class="text-truncate" style="max-width: 220px;">{{ stock.companyName }}</td>
+                        <td class="small text-muted">{{ stock.indices }}</td>
+                        <td>
+                            @if (latestSignalFor(stock); as sig) {
+                            <app-signal-badge [type]="sig.signalType" [isNew]="sig.isNew" />
+                            }
+                        </td>
+                        <td class="text-end">{{ stock.adx14 !== null ? (stock.adx14 | number:'1.1-1') : '—' }}</td>
+                        <td class="text-end">{{ stock.rsi14 !== null ? (stock.rsi14 | number:'1.1-1') : '—' }}</td>
+                        <td class="text-center">
+                            @if (stock.above50Dma === true) {
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            } @else if (stock.above50Dma === false) {
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                            } @else {
+                            —
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (stock.above200Dma === true) {
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            } @else if (stock.above200Dma === false) {
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                            } @else {
+                            —
+                            }
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+    }
+    }
+</div>

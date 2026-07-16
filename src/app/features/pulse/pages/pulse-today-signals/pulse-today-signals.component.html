@@ -1,0 +1,64 @@
+<div class="main-content bg-light">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-lightning-charge-fill"></i> Pulse — Today's Signals
+                </h1>
+                <p class="text-muted mb-0">Everything that fired today. Strongest action first.</p>
+            </div>
+            <div class="d-flex">
+                <input type="text" placeholder="Select Date" class="form-control" bsDatepicker #dp="bsDatepicker"
+                    [bsConfig]="bsConfig" [maxDate]="maxDate" [(ngModel)]="selectedDate"
+                    (bsValueChange)="onDateChange($event)" style="width: 150px;">
+                <button class="btn btn-outline-secondary light-secondary-border border-0" type="button"
+                    (click)="dp.show()">
+                    <i class="bi bi-calendar3"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading()) {
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading today's signals...</p>
+    </div>
+    } @else {
+
+    @if (signals().length === 0) {
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-moon-stars display-6 text-muted"></i>
+            <p class="text-muted mb-0 mt-2">No WATCH, ENTRY or EXIT signals on this date.</p>
+        </div>
+    </div>
+    } @else {
+    <div class="d-flex flex-wrap gap-3">
+        @for (sig of signals(); track sig.id) {
+        <div class="today-signal-card" (click)="openStockDetail(sig.stockId)">
+            <div class="d-flex justify-content-between align-items-start">
+                <strong class="fs-5">{{ sig.symbol }}</strong>
+                <app-signal-badge [type]="sig.signalType" [isNew]="sig.isNew" />
+            </div>
+            <div class="small text-muted mt-1">{{ sig.companyName }}</div>
+            <div class="small text-muted">{{ sig.sector }}</div>
+            <div class="small mt-2">{{ sig.reason }}</div>
+            <div class="small text-muted mt-2">₹{{ sig.priceAtSignal | number:'1.2-2' }}</div>
+        </div>
+        }
+    </div>
+    }
+
+    <div class="d-flex gap-3 mt-4">
+        <a routerLink="/pulse/sector" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-diagram-3-fill me-1"></i> Explore sector rankings →
+        </a>
+        <a routerLink="/pulse/screener" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-radar me-1"></i> Explore Screener →
+        </a>
+    </div>
+    }
+</div>

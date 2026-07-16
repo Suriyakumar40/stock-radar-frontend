@@ -30,6 +30,30 @@
     </div>
 
     <div class="sidebar-section">
+        <div class="sidebar-title">Pulse</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="/pulse" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'pulse' }" (click)="selectedMenu.set('pulse')">
+                    <span class="sidebar-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+                    <span class="link-text">Today's Signals</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="/pulse/sector" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'pulse' }" (click)="selectedMenu.set('pulse')">
+                    <span class="sidebar-icon"><i class="bi bi-diagram-3-fill"></i></span>
+                    <span class="link-text">By Sector</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="/pulse/screener" class="sidebar-link" [ngClass]="{ active: selectedMenu() === 'pulse' }" (click)="selectedMenu.set('pulse')">
+                    <span class="sidebar-icon"><i class="bi bi-radar"></i></span>
+                    <span class="link-text">Screener</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
         <div class="sidebar-title">Multi-Bagger</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">

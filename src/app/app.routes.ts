@@ -17,5 +17,9 @@ export const routes: Routes = [
     {
         path: 'momentum',
         loadChildren: () => import('./features/momentum/momentum.routes').then(m => m.momentumRoutes)
+    },
+    {
+        path: 'pulse',
+        loadChildren: () => import('./features/pulse/pulse.routes').then(m => m.pulseRoutes)
     }
 ];
